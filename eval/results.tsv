@@ -1,2 +1,3 @@
 commit	score	precision	recall	tp	fn	tn	fp	status	description
 baseline	0.8091	1.0000	0.7273	8	3	4	0	keep	baseline
+d93caa5	0.9364	1.0000	0.9091	10	1	4	0	keep	scan dotnet strings in unparseable MZ binaries

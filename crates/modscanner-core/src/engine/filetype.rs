@@ -23,6 +23,9 @@ const DATA_EXTENSIONS: &[&str] = &[
     "md", "csv", "lua", "luac", "py", "cs", "js",
 ];
 
+/// Executable extensions that should never appear in game mod directories
+const EXEC_EXTENSIONS: &[&str] = &["exe", "bat", "cmd", "com", "scr", "pif", "msi", "ps1", "vbs", "wsf"];
+
 /// File types detected by magic bytes that are dangerous
 fn is_dangerous_type(kind: &infer::Type) -> bool {
     matches!(
@@ -57,9 +60,16 @@ impl DetectionEngine for FiletypeEngine {
     }
 
     fn should_scan(&self, ctx: &FileContext) -> bool {
-        // Scan files that have a data-like extension
-        ctx.extension
-            .is_some_and(|ext| DATA_EXTENSIONS.iter().any(|&e| e.eq_ignore_ascii_case(ext)))
+        // Scan files that have a data-like extension OR executable extensions
+        // (executables in game mod directories are always suspicious)
+        ctx.extension.is_some_and(|ext| {
+            DATA_EXTENSIONS
+                .iter()
+                .any(|&e| e.eq_ignore_ascii_case(ext))
+                || EXEC_EXTENSIONS
+                    .iter()
+                    .any(|&e| e.eq_ignore_ascii_case(ext))
+        })
     }
 
     fn scan(&self, ctx: &FileContext) -> Vec<Finding> {
@@ -150,6 +160,27 @@ impl DetectionEngine for FiletypeEngine {
                 byte_offset: Some(0),
                 line_number: None,
                 matched_rule: Some("FILETYPE-SHEBANG-DISGUISED".into()),
+            });
+        }
+
+        // Flag executable files in mod directories — game mods should never contain .exe etc.
+        if findings.is_empty()
+            && EXEC_EXTENSIONS
+                .iter()
+                .any(|&e| e.eq_ignore_ascii_case(&ext))
+        {
+            findings.push(Finding {
+                engine_name: self.name(),
+                severity: Severity::Critical,
+                title: format!("Executable file (.{ext}) in mod directory"),
+                description: format!(
+                    "File has .{ext} extension. Game mods should not contain executable files. \
+                     This is a strong indicator of malicious content."
+                ),
+                file_path: ctx.path.to_path_buf(),
+                byte_offset: Some(0),
+                line_number: None,
+                matched_rule: Some("FILETYPE-EXEC-DISGUISED".into()),
             });
         }
 
