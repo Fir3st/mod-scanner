@@ -1,0 +1,8 @@
+[package]
+name = "modscanner-steam"
+version.workspace = true
+edition.workspace = true
+
+[dependencies]
+modscanner-platform.workspace = true
+log.workspace = true

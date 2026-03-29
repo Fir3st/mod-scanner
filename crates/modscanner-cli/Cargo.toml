@@ -1,0 +1,20 @@
+[package]
+name = "modscanner-cli"
+version.workspace = true
+edition.workspace = true
+
+[[bin]]
+name = "modscanner"
+path = "src/main.rs"
+
+[dependencies]
+modscanner-core.workspace = true
+modscanner-platform.workspace = true
+modscanner-rimworld.workspace = true
+modscanner-wow.workspace = true
+modscanner-steam.workspace = true
+modscanner-curseforge.workspace = true
+clap.workspace = true
+env_logger.workspace = true
+log.workspace = true
+owo-colors.workspace = true

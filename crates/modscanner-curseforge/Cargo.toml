@@ -1,0 +1,8 @@
+[package]
+name = "modscanner-curseforge"
+version.workspace = true
+edition.workspace = true
+
+[dependencies]
+modscanner-platform.workspace = true
+log.workspace = true

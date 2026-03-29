@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ModMetaData>
+    <name>Clean Example Mod</name>
+    <author>GoodModder</author>
+    <packageId>good.cleanmod</packageId>
+    <description>A clean mod for testing.</description>
+    <supportedVersions>
+        <li>1.5</li>
+    </supportedVersions>
+</ModMetaData>

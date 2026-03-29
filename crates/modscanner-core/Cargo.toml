@@ -1,0 +1,16 @@
+[package]
+name = "modscanner-core"
+version.workspace = true
+edition.workspace = true
+
+[dependencies]
+thiserror.workspace = true
+log.workspace = true
+walkdir.workspace = true
+regex.workspace = true
+memmap2.workspace = true
+rayon.workspace = true
+infer.workspace = true
+goblin.workspace = true
+owo-colors.workspace = true
+serde.workspace = true

@@ -1,0 +1,41 @@
+[workspace]
+resolver = "2"
+members = [
+    "crates/modscanner-core",
+    "crates/modscanner-platform",
+    "crates/modscanner-rimworld",
+    "crates/modscanner-wow",
+    "crates/modscanner-steam",
+    "crates/modscanner-curseforge",
+    "crates/modscanner-monitor",
+    "crates/modscanner-cli",
+]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2024"
+license = "MIT"
+repository = "https://github.com/user/modscanner"
+
+[workspace.dependencies]
+modscanner-core = { path = "crates/modscanner-core" }
+modscanner-platform = { path = "crates/modscanner-platform" }
+modscanner-rimworld = { path = "crates/modscanner-rimworld" }
+modscanner-wow = { path = "crates/modscanner-wow" }
+modscanner-steam = { path = "crates/modscanner-steam" }
+modscanner-curseforge = { path = "crates/modscanner-curseforge" }
+modscanner-monitor = { path = "crates/modscanner-monitor" }
+
+serde = { version = "1", features = ["derive"] }
+toml = "0.8"
+thiserror = "2"
+log = "0.4"
+walkdir = "2.5"
+regex = "1"
+memmap2 = "0.9"
+rayon = "1.10"
+infer = "0.19"
+goblin = "0.10"
+owo-colors = "4"
+clap = { version = "4", features = ["derive"] }
+env_logger = "0.11"

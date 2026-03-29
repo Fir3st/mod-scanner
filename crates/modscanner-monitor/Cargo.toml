@@ -1,0 +1,9 @@
+[package]
+name = "modscanner-monitor"
+version.workspace = true
+edition.workspace = true
+
+[dependencies]
+modscanner-core.workspace = true
+modscanner-platform.workspace = true
+log.workspace = true

@@ -1,0 +1,9 @@
+[package]
+name = "modscanner-rimworld"
+version.workspace = true
+edition.workspace = true
+
+[dependencies]
+modscanner-platform.workspace = true
+log.workspace = true
+walkdir.workspace = true
