@@ -163,6 +163,37 @@ impl DetectionEngine for FiletypeEngine {
             });
         }
 
+        // Detect double extensions (e.g., "readme.txt.exe", "image.png.scr")
+        if findings.is_empty() {
+            if let Some(stem) = ctx.path.file_stem().and_then(|s| s.to_str()) {
+                if let Some(inner_dot) = stem.rfind('.') {
+                    let inner_ext = &stem[inner_dot + 1..];
+                    // If the inner extension looks like a data type and the outer is executable
+                    if DATA_EXTENSIONS
+                        .iter()
+                        .any(|&e| e.eq_ignore_ascii_case(inner_ext))
+                        && EXEC_EXTENSIONS
+                            .iter()
+                            .any(|&e| e.eq_ignore_ascii_case(&ext))
+                    {
+                        findings.push(Finding {
+                            engine_name: self.name(),
+                            severity: Severity::Critical,
+                            title: format!("Double extension: .{inner_ext}.{ext}"),
+                            description: format!(
+                                "File uses double extension (.{inner_ext}.{ext}) to disguise an \
+                                 executable as a data file. This is a common social engineering technique."
+                            ),
+                            file_path: ctx.path.to_path_buf(),
+                            byte_offset: None,
+                            line_number: None,
+                            matched_rule: Some("FILETYPE-DOUBLE-EXT".into()),
+                        });
+                    }
+                }
+            }
+        }
+
         // Flag executable files in mod directories — game mods should never contain .exe etc.
         if findings.is_empty()
             && EXEC_EXTENSIONS
