@@ -20,7 +20,7 @@ impl FiletypeEngine {
 const DATA_EXTENSIONS: &[&str] = &[
     "png", "jpg", "jpeg", "gif", "bmp", "tga", "dds", "blp", "tif", "tiff", "ico", "svg", "ogg",
     "wav", "mp3", "flac", "aac", "wma", "xml", "json", "toml", "yaml", "yml", "ini", "cfg", "txt",
-    "md", "csv", "lua", "luac", "py", "cs", "js",
+    "md", "csv", "lua", "luac", "py", "cs", "js", "ts", "mjs", "toc",
 ];
 
 /// Executable extensions that should never appear in game mod directories
@@ -47,6 +47,22 @@ fn has_pe_header(data: &[u8]) -> bool {
 /// Check for ELF header
 fn has_elf_header(data: &[u8]) -> bool {
     data.len() >= 4 && data[0] == 0x7f && data[1] == b'E' && data[2] == b'L' && data[3] == b'F'
+}
+
+/// Check for Mach-O header (macOS executable)
+fn has_macho_header(data: &[u8]) -> bool {
+    if data.len() < 4 {
+        return false;
+    }
+    // Mach-O magic: feedface (32-bit), feedfacf (64-bit), cafebabe (universal)
+    matches!(
+        &data[..4],
+        [0xFE, 0xED, 0xFA, 0xCE]
+            | [0xFE, 0xED, 0xFA, 0xCF]
+            | [0xCE, 0xFA, 0xED, 0xFE]
+            | [0xCF, 0xFA, 0xED, 0xFE]
+            | [0xCA, 0xFE, 0xBA, 0xBE]
+    )
 }
 
 /// Check for shell script shebang
@@ -132,6 +148,19 @@ impl DetectionEngine for FiletypeEngine {
                 byte_offset: Some(0),
                 line_number: None,
                 matched_rule: Some("FILETYPE-ELF-DISGUISED".into()),
+            });
+        } else if has_macho_header(ctx.data) && !matches!(ext.as_str(), "dylib") {
+            findings.push(Finding {
+                engine_name: self.name(),
+                severity: Severity::Critical,
+                title: format!("Mach-O binary disguised as .{ext}"),
+                description: format!(
+                    "File has .{ext} extension but starts with Mach-O header (macOS executable)."
+                ),
+                file_path: ctx.path.to_path_buf(),
+                byte_offset: Some(0),
+                line_number: None,
+                matched_rule: Some("FILETYPE-MACHO-DISGUISED".into()),
             });
         } else if has_shebang(ctx.data)
             && matches!(
