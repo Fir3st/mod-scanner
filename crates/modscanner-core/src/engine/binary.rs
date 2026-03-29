@@ -91,6 +91,21 @@ const SUSPICIOUS_DOTNET_STRINGS: &[(&str, &str, Severity)] = &[
         "UDP client  - raw network connection",
         Severity::High,
     ),
+    (
+        "WebSocket",
+        "WebSocket connection  - real-time C2 channel",
+        Severity::High,
+    ),
+    (
+        "SmtpClient",
+        "SMTP client  - can send email (data exfiltration)",
+        Severity::High,
+    ),
+    (
+        "FtpWebRequest",
+        "FTP request  - file transfer (data exfiltration)",
+        Severity::High,
+    ),
     // Process execution
     (
         "System.Diagnostics.Process",
