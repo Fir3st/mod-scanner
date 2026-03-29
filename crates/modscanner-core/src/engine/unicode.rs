@@ -141,6 +141,30 @@ fn is_confusable(ch: char) -> bool {
 }
 
 fn check_token(chars: &[char], results: &mut Vec<(String, Script, Script)>) {
+    // Skip tokens shorter than 3 chars (not meaningful for homoglyph detection)
+    if chars.len() < 3 {
+        return;
+    }
+
+    // Skip WoW/game color code artifacts: tokens starting with hex-like prefix
+    // e.g. "cff69ccf0" from "|cff69ccf0Text" after stripping the pipe
+    if chars.len() >= 9
+        && (chars[0] == 'c' || chars[0] == 'C')
+        && chars[1..9].iter().all(|c| c.is_ascii_hexdigit())
+    {
+        return;
+    }
+    // Also skip "cFFFFFD00Text" pattern (uppercase variant)
+    if chars.len() >= 10
+        && (chars[0] == 'c' || chars[0] == 'C')
+        && chars[1] == 'f' || chars[1] == 'F'
+    {
+        let hex_prefix: String = chars[1..].iter().take(8).collect();
+        if hex_prefix.chars().all(|c| c.is_ascii_hexdigit()) {
+            return;
+        }
+    }
+
     // Classify each character's script
     let scripts: Vec<Script> = chars.iter().map(|&ch| char_script(ch)).collect();
 

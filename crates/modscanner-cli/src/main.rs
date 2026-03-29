@@ -1,4 +1,4 @@
-use clap::{Parser, Subcommand};
+use clap::{Parser, Subcommand, ValueEnum};
 use modscanner_core::{default_engines, report, scanner};
 use modscanner_platform::Platform;
 use owo_colors::OwoColorize;
@@ -8,12 +8,18 @@ use std::process;
 #[derive(Parser)]
 #[command(
     name = "modscanner",
-    about = "Security scanner for game mods — detects supply chain attacks, malware, and suspicious code",
+    about = "Security scanner for game mods - detects supply chain attacks, malware, and suspicious code",
     version
 )]
 struct Cli {
     #[command(subcommand)]
     command: Commands,
+}
+
+#[derive(Clone, ValueEnum)]
+enum OutputFormat {
+    Terminal,
+    Json,
 }
 
 #[derive(Subcommand)]
@@ -26,6 +32,10 @@ enum Commands {
         /// Platform to scan: rimworld, wow, all
         #[arg(short, long)]
         platform: Option<String>,
+
+        /// Output format
+        #[arg(short, long, default_value = "terminal")]
+        format: OutputFormat,
     },
 
     /// List detected game platforms
@@ -53,7 +63,14 @@ fn find_platform(name: &str) -> Option<Box<dyn Platform>> {
     }
 }
 
-fn cmd_scan(path: Option<PathBuf>, platform: Option<String>) {
+fn print_report(r: &scanner::ScanReport, format: &OutputFormat) {
+    match format {
+        OutputFormat::Terminal => report::print_terminal_report(r),
+        OutputFormat::Json => report::print_json_report(r),
+    }
+}
+
+fn cmd_scan(path: Option<PathBuf>, platform: Option<String>, format: OutputFormat) {
     let engines = default_engines();
 
     // Direct path scan
@@ -67,13 +84,15 @@ fn cmd_scan(path: Option<PathBuf>, platform: Option<String>) {
             process::exit(3);
         }
 
-        println!(
-            "{}",
-            format!("Scanning {}...", dir.display()).dimmed()
-        );
-        let report = scanner::scan_directory(dir, &engines);
-        report::print_terminal_report(&report);
-        process::exit(report::exit_code(&report));
+        if matches!(format, OutputFormat::Terminal) {
+            println!(
+                "{}",
+                format!("Scanning {}...", dir.display()).dimmed()
+            );
+        }
+        let r = scanner::scan_directory(dir, &engines);
+        print_report(&r, &format);
+        process::exit(report::exit_code(&r));
     }
 
     // Platform-based scan
@@ -154,14 +173,16 @@ fn cmd_scan(path: Option<PathBuf>, platform: Option<String>) {
                 let r = scanner::scan_directory(&mod_dir.path, &engines);
 
                 if r.findings.is_empty() {
-                    println!(
-                        "    {} clean ({} files, {:.1}s)",
-                        "✓".green(),
-                        r.scanned_files,
-                        r.duration.as_secs_f64()
-                    );
+                    if matches!(format, OutputFormat::Terminal) {
+                        println!(
+                            "    {} clean ({} files, {:.1}s)",
+                            "✓".green(),
+                            r.scanned_files,
+                            r.duration.as_secs_f64()
+                        );
+                    }
                 } else {
-                    report::print_terminal_report(&r);
+                    print_report(&r, &format);
                     let code = report::exit_code(&r);
                     if code > overall_exit {
                         overall_exit = code;
@@ -185,7 +206,7 @@ fn cmd_platforms() {
         let instances = plat.detect();
         if instances.is_empty() {
             println!(
-                "  {} {} — {}",
+                "  {} {} - {}",
                 "·".dimmed(),
                 plat.name(),
                 "not found".dimmed()
@@ -194,7 +215,7 @@ fn cmd_platforms() {
             found_any = true;
             for instance in &instances {
                 println!(
-                    "  {} {} ({}) — {}",
+                    "  {} {} ({}) - {}",
                     "✓".green(),
                     plat.name().bold(),
                     instance.variant,
@@ -222,7 +243,7 @@ fn main() {
     let cli = Cli::parse();
 
     match cli.command {
-        Commands::Scan { path, platform } => cmd_scan(path, platform),
+        Commands::Scan { path, platform, format } => cmd_scan(path, platform, format),
         Commands::Platforms => cmd_platforms(),
     }
 }

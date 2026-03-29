@@ -15,7 +15,7 @@ members = [
 version = "0.1.0"
 edition = "2024"
 license = "MIT"
-repository = "https://github.com/user/modscanner"
+repository = "https://github.com/Fir3st/mod-scanner"
 
 [workspace.dependencies]
 modscanner-core = { path = "crates/modscanner-core" }
@@ -39,3 +39,4 @@ goblin = "0.10"
 owo-colors = "4"
 clap = { version = "4", features = ["derive"] }
 env_logger = "0.11"
+serde_json = "1"

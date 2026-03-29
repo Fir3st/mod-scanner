@@ -1,6 +1,7 @@
-use crate::engine::Severity;
+use crate::engine::{Finding, Severity};
 use crate::scanner::ScanReport;
 use owo_colors::OwoColorize;
+use serde::Serialize;
 
 /// Print a scan report to the terminal with colors
 pub fn print_terminal_report(report: &ScanReport) {
@@ -92,6 +93,78 @@ pub fn print_terminal_report(report: &ScanReport) {
         }
         println!();
     }
+}
+
+/// JSON-serializable finding
+#[derive(Serialize)]
+struct JsonFinding {
+    engine: &'static str,
+    severity: String,
+    title: String,
+    description: String,
+    file: String,
+    line: Option<u32>,
+    byte_offset: Option<u64>,
+    rule: Option<String>,
+}
+
+impl From<&Finding> for JsonFinding {
+    fn from(f: &Finding) -> Self {
+        JsonFinding {
+            engine: f.engine_name,
+            severity: f.severity.to_string().to_lowercase(),
+            title: f.title.clone(),
+            description: f.description.clone(),
+            file: f.file_path.display().to_string(),
+            line: f.line_number,
+            byte_offset: f.byte_offset,
+            rule: f.matched_rule.clone(),
+        }
+    }
+}
+
+/// JSON-serializable report
+#[derive(Serialize)]
+struct JsonReport {
+    path: String,
+    scanned_files: u32,
+    skipped_files: u32,
+    duration_secs: f64,
+    findings: Vec<JsonFinding>,
+    errors: Vec<String>,
+    summary: JsonSummary,
+}
+
+#[derive(Serialize)]
+struct JsonSummary {
+    critical: usize,
+    high: usize,
+    medium: usize,
+    low: usize,
+    info: usize,
+    total: usize,
+}
+
+/// Print a scan report as JSON
+pub fn print_json_report(report: &ScanReport) {
+    let json_report = JsonReport {
+        path: report.root_path.display().to_string(),
+        scanned_files: report.scanned_files,
+        skipped_files: report.skipped_files,
+        duration_secs: report.duration.as_secs_f64(),
+        findings: report.findings.iter().map(JsonFinding::from).collect(),
+        errors: report.errors.clone(),
+        summary: JsonSummary {
+            critical: report.findings.iter().filter(|f| f.severity == Severity::Critical).count(),
+            high: report.findings.iter().filter(|f| f.severity == Severity::High).count(),
+            medium: report.findings.iter().filter(|f| f.severity == Severity::Medium).count(),
+            low: report.findings.iter().filter(|f| f.severity == Severity::Low).count(),
+            info: report.findings.iter().filter(|f| f.severity == Severity::Info).count(),
+            total: report.findings.len(),
+        },
+    };
+
+    println!("{}", serde_json::to_string_pretty(&json_report).unwrap());
 }
 
 /// Determine exit code from findings
