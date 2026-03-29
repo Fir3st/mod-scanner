@@ -104,6 +104,23 @@ fn build_rules() -> Vec<StaticRule> {
         extensions: lua_ext,
     });
 
+    rules.push(StaticRule {
+        id: "LUA-NET-002",
+        name: "Lua dofile/loadfile with URL",
+        severity: Severity::Critical,
+        pattern: Regex::new(r#"(dofile|loadfile)\s*\(\s*['\"]https?://"#).unwrap(),
+        description: "dofile/loadfile with a URL argument — loading and executing remote code",
+        extensions: lua_ext,
+    });
+    rules.push(StaticRule {
+        id: "LUA-OBFUSC-002",
+        name: "Lua Base64 decode pattern",
+        severity: Severity::Medium,
+        pattern: Regex::new(r#"(base64|b64|decode|from_base64)\s*\("#).unwrap(),
+        description: "Base64 decoding pattern — may be hiding malicious payload",
+        extensions: lua_ext,
+    });
+
     // === C# RULES (for RimWorld Assemblies DLLs decompiled or source) ===
     let cs_ext: &[&str] = &["cs"];
 
