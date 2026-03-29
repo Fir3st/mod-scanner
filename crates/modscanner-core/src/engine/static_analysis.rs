@@ -174,6 +174,26 @@ fn build_rules() -> Vec<StaticRule> {
         extensions: cs_ext,
     });
 
+    rules.push(StaticRule {
+        id: "CS-REFLECT-002",
+        name: "C# runtime code generation",
+        severity: Severity::High,
+        pattern: Regex::new(r#"(Reflection\.Emit|DynamicMethod|ILGenerator)"#).unwrap(),
+        description: "Runtime IL code generation via Reflection.Emit — can create executable code at runtime",
+        extensions: cs_ext,
+    });
+    rules.push(StaticRule {
+        id: "CS-RECON-001",
+        name: "C# system reconnaissance",
+        severity: Severity::Medium,
+        pattern: Regex::new(
+            r#"Environment\s*\.\s*(UserName|MachineName|UserDomainName|OSVersion)"#,
+        )
+        .unwrap(),
+        description: "Querying system identity info — may be fingerprinting the host",
+        extensions: cs_ext,
+    });
+
     // === PYTHON RULES ===
     let py_ext: &[&str] = &["py"];
 
