@@ -267,6 +267,15 @@ fn build_rules() -> Vec<StaticRule> {
         extensions: lua_ext,
     });
 
+    rules.push(StaticRule {
+        id: "WOW-INJECT-001",
+        name: "WoW RunScript code injection",
+        severity: Severity::High,
+        pattern: Regex::new(r#"RunScript\s*\(\s*[^)]*\.\."#).unwrap(),
+        description: "RunScript with string concatenation — dynamic code injection in WoW addon",
+        extensions: lua_ext,
+    });
+
     rules
 }
 
