@@ -28,6 +28,7 @@ const PDF_MAGIC: &[u8] = b"%PDF";
 const JAVA_CLASS_MAGIC: &[u8] = &[0xCA, 0xFE, 0xBA, 0xBE];
 const GIF_MAGIC_87: &[u8] = b"GIF87a";
 const GIF_MAGIC_89: &[u8] = b"GIF89a";
+const BMP_MAGIC: &[u8] = b"BM";
 const JPEG_MAGIC: &[u8] = &[0xFF, 0xD8, 0xFF];
 const JPEG_END: &[u8] = &[0xFF, 0xD9];
 
@@ -221,6 +222,36 @@ impl DetectionEngine for PolyglotEngine {
                             byte_offset: Some(gif_end as u64),
                             line_number: None,
                             matched_rule: Some("POLYGLOT-GIF".into()),
+                        });
+                    }
+                }
+            }
+        }
+
+        // --- BMP polyglot detection ---
+        if starts_with(data, BMP_MAGIC) && data.len() > 14 {
+            // BMP file size is stored at bytes 2-5 (little-endian)
+            let bmp_size = u32::from_le_bytes([data[2], data[3], data[4], data[5]]) as usize;
+            if bmp_size > 0 && bmp_size < data.len() {
+                let trailing = data.len() - bmp_size;
+                if trailing > 64 {
+                    let trail = &data[bmp_size..];
+                    if starts_with(trail, ZIP_LOCAL_HEADER)
+                        || starts_with(trail, PE_MAGIC)
+                        || starts_with(trail, ELF_MAGIC)
+                    {
+                        findings.push(Finding {
+                            engine_name: self.name(),
+                            severity: Severity::Critical,
+                            title: "BMP polyglot detected".into(),
+                            description: format!(
+                                "BMP file with executable/archive data appended ({trailing} bytes \
+                                 beyond declared BMP size of {bmp_size})."
+                            ),
+                            file_path: ctx.path.to_path_buf(),
+                            byte_offset: Some(bmp_size as u64),
+                            line_number: None,
+                            matched_rule: Some("POLYGLOT-BMP".into()),
                         });
                     }
                 }
