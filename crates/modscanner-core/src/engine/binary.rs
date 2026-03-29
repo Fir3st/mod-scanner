@@ -91,6 +91,21 @@ const SUSPICIOUS_DOTNET_STRINGS: &[(&str, &str, Severity)] = &[
         "UDP client  - raw network connection",
         Severity::High,
     ),
+    (
+        "WebSocket",
+        "WebSocket connection  - real-time C2 channel",
+        Severity::High,
+    ),
+    (
+        "SmtpClient",
+        "SMTP client  - can send email (data exfiltration)",
+        Severity::High,
+    ),
+    (
+        "FtpWebRequest",
+        "FTP request  - file transfer (data exfiltration)",
+        Severity::High,
+    ),
     // Process execution
     (
         "System.Diagnostics.Process",
@@ -144,6 +159,26 @@ const SUSPICIOUS_DOTNET_STRINGS: &[(&str, &str, Severity)] = &[
     ("bitcoin", "Bitcoin reference", Severity::Medium),
     ("ethereum", "Ethereum reference", Severity::Medium),
     ("metamask", "MetaMask reference", Severity::High),
+    (
+        "Login Data",
+        "Browser login database reference (credential theft?)",
+        Severity::High,
+    ),
+    (
+        "cookies.sqlite",
+        "Browser cookies database reference",
+        Severity::High,
+    ),
+    (
+        "leveldb",
+        "LevelDB reference (Discord/browser token storage)",
+        Severity::Medium,
+    ),
+    (
+        "Steam\\config",
+        "Steam config directory reference",
+        Severity::High,
+    ),
     // Dynamic code loading
     ("Assembly.Load", "Dynamic assembly loading", Severity::High),
     (
@@ -167,6 +202,66 @@ const SUSPICIOUS_DOTNET_STRINGS: &[(&str, &str, Severity)] = &[
         Severity::Medium,
     ),
     ("DllImport", "P/Invoke native code", Severity::Medium),
+    (
+        "IsDebuggerPresent",
+        "Anti-debugging check  - malware evasion technique",
+        Severity::High,
+    ),
+    (
+        "CheckRemoteDebuggerPresent",
+        "Anti-debugging check  - malware evasion technique",
+        Severity::High,
+    ),
+    (
+        "VirtualProtect",
+        "Memory protection change  - code injection technique",
+        Severity::High,
+    ),
+    (
+        "WriteProcessMemory",
+        "Writing to another process memory  - injection",
+        Severity::Critical,
+    ),
+    (
+        "CreateRemoteThread",
+        "Creating thread in another process  - injection",
+        Severity::Critical,
+    ),
+    (
+        "TaskScheduler",
+        "Task Scheduler access  - persistence mechanism",
+        Severity::Critical,
+    ),
+    (
+        "StartupFolder",
+        "Startup folder reference  - persistence mechanism",
+        Severity::Critical,
+    ),
+    (
+        "CurrentVersion\\Run",
+        "Registry Run key  - auto-start persistence",
+        Severity::Critical,
+    ),
+    (
+        "GetEnvironmentVariable",
+        "Reading environment variables (credential/token theft?)",
+        Severity::Medium,
+    ),
+    (
+        "File.ReadAllBytes",
+        "Reading entire file contents into memory",
+        Severity::Medium,
+    ),
+    (
+        "File.ReadAllText",
+        "Reading entire file contents as text",
+        Severity::Medium,
+    ),
+    (
+        "Directory.GetFiles",
+        "Enumerating files in directory (reconnaissance?)",
+        Severity::Low,
+    ),
     // Clipboard (crypto address swapping)
     (
         "Clipboard",
@@ -179,6 +274,38 @@ const SUSPICIOUS_DOTNET_STRINGS: &[(&str, &str, Severity)] = &[
         "Reading clipboard data",
         Severity::Medium,
     ),
+    (
+        "CopyFromScreen",
+        "Screen capture  - spyware behavior",
+        Severity::Critical,
+    ),
+    (
+        "GetForegroundWindow",
+        "Getting active window  - keylogger/spyware technique",
+        Severity::Medium,
+    ),
+    (
+        "GetAsyncKeyState",
+        "Keyboard state monitoring  - keylogger technique",
+        Severity::Critical,
+    ),
+    // Crypto-mining
+    (
+        "stratum+tcp",
+        "Stratum mining protocol  - crypto mining",
+        Severity::Critical,
+    ),
+    (
+        "CryptoNight",
+        "CryptoNight hash algorithm  - Monero mining",
+        Severity::Critical,
+    ),
+    (
+        "hashrate",
+        "Hash rate reference  - crypto mining indicator",
+        Severity::High,
+    ),
+    ("xmrig", "XMRig miner reference", Severity::Critical),
 ];
 
 /// Known packer section names
@@ -299,6 +426,11 @@ fn scan_dotnet_strings(data: &[u8], findings: &mut Vec<Finding>, path: &std::pat
     }
 }
 
+/// Check for MZ header (PE binary)
+fn has_mz_header(data: &[u8]) -> bool {
+    data.len() >= 2 && data[0] == b'M' && data[1] == b'Z'
+}
+
 /// Simple byte pattern search
 fn find_bytes(haystack: &[u8], needle: &[u8]) -> Option<usize> {
     if needle.is_empty() || haystack.len() < needle.len() {
@@ -354,6 +486,17 @@ const WHITELISTED_DLLS: &[&str] = &[
     "cecil",
     "lunarframework",
     "lunarloader",
+    "publicizer",
+    "prepatcher",
+    "bepinex",
+    "doorstop",
+    "melonloader",
+    "modloader",
+    "rocketmod",
+    "newtonsoft.json",
+    "yamldotnet",
+    "nlog",
+    "log4net",
 ];
 
 fn is_whitelisted_dll(path: &std::path::Path) -> bool {
@@ -423,7 +566,11 @@ impl DetectionEngine for BinaryEngine {
                 analyze_elf(ctx.data, &elf, &mut findings, ctx.path);
             }
             _ => {
-                // Not a recognized binary format, skip
+                // Goblin couldn't parse the binary, but if it has an MZ header
+                // it's still worth scanning for .NET strings (synthetic/minimal PEs)
+                if !skip_string_scan && has_mz_header(ctx.data) {
+                    scan_dotnet_strings(ctx.data, &mut findings, ctx.path);
+                }
             }
         }
 

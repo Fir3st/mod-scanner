@@ -5,7 +5,11 @@
       "Bash(cargo check:*)",
       "Bash(cargo test:*)",
       "Bash(cargo build:*)",
-      "Bash(./target/release/modscanner scan:*)"
+      "Bash(./target/release/modscanner scan:*)",
+      "Bash(bash eval/evaluate.sh)",
+      "Bash(eval/results.tsv:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)"
     ]
   }
 }

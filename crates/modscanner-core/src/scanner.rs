@@ -19,7 +19,7 @@ pub struct ScanReport {
 /// Skip files with these extensions (large binary assets, not interesting)
 const SKIP_EXTENSIONS: &[&str] = &[
     "ogg", "wav", "mp3", "flac", "aac", "wma", "bank", "fsb", // audio
-    "dds", "blp", // compiled textures (still scan png/tga/jpg for type spoof)
+    "dds", // compiled textures (still scan png/tga/jpg/blp for type spoof)
     "psd", "xcf", // editor files
     "mp4", "avi", "mkv", "webm", // video
     "ttf", "otf", "woff", "woff2", // fonts

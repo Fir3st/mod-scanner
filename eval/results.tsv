@@ -1,1 +1,37 @@
 commit	score	precision	recall	tp	fn	tn	fp	status	description
+baseline	0.8091	1.0000	0.7273	8	3	4	0	keep	baseline
+d93caa5	0.9364	1.0000	0.9091	10	1	4	0	keep	scan dotnet strings in unparseable MZ binaries
+e580309	1.0000	1.0000	1.0000	11	0	4	0	keep	detect executable files in mod directories
+92dbbe9	1.0000	1.0000	1.0000	11	0	4	0	keep	add double extension detection
+a942207	1.0000	1.0000	1.0000	11	0	4	0	keep	add Lua dofile URL and base64 decode detection
+7ed3514	1.0000	1.0000	1.0000	11	0	4	0	keep	add PowerShell encoded command detection
+299484b	1.0000	1.0000	1.0000	11	0	4	0	keep	add .NET file/env access patterns
+571605a	1.0000	1.0000	1.0000	11	0	4	0	keep	add Lua FFI and global table manipulation detection
+4dc3dc4	1.0000	1.0000	1.0000	11	0	4	0	keep	add C# Reflection.Emit and recon detection
+ca8581c	1.0000	1.0000	1.0000	11	0	4	0	keep	add credential theft string patterns
+91800eb	1.0000	1.0000	1.0000	11	0	4	0	keep	add WoW RunScript injection detection
+846e5db	1.0000	1.0000	1.0000	11	0	4	0	keep	add JavaScript dangerous pattern detection
+ecd4aaa	1.0000	1.0000	1.0000	11	0	4	0	keep	scan .blp files for type spoofing
+880d7ce	1.0000	1.0000	1.0000	11	0	4	0	keep	add WebSocket/SMTP/FTP .NET patterns
+3ceb949	1.0000	1.0000	1.0000	11	0	4	0	keep	add Python ctypes/dynamic import/keylog detection
+d3087d5	1.0000	1.0000	1.0000	11	0	4	0	keep	add .NET persistence mechanism detection
+b9e5753	1.0000	1.0000	1.0000	11	0	4	0	keep	add Lua string.dump and _ENV detection
+a9b75ad	1.0000	1.0000	1.0000	11	0	4	0	keep	add C# unsafe and Marshal detection
+a71b23a	1.0000	1.0000	1.0000	11	0	4	0	keep	add Mach-O detection and expand extensions
+f524584	1.0000	1.0000	1.0000	11	0	4	0	keep	add anti-debugging and process injection patterns
+reverted	0.3000	1.0000	0.0000	0	11	4	0	discard	manifest URL detection (regex panic)
+1e19454	1.0000	1.0000	1.0000	11	0	4	0	keep	add script tag detection in XML
+712bab5	1.0000	1.0000	1.0000	11	0	4	0	keep	add Lua pcall-wrapped loadstring detection
+c4706b2	1.0000	1.0000	1.0000	11	0	4	0	keep	add screen capture and keylogger patterns
+645e3f3	1.0000	1.0000	1.0000	11	0	4	0	keep	add WoW securecall hook detection
+814eadd	1.0000	1.0000	1.0000	11	0	4	0	keep	add Steam VDF InstallScript/Run detection
+274233f	1.0000	1.0000	1.0000	11	0	4	0	keep	add BMP polyglot detection
+90c60cd	1.0000	1.0000	1.0000	11	0	4	0	keep	add crypto-mining detection patterns
+87a07bd	1.0000	1.0000	1.0000	11	0	4	0	keep	add Lua string.reverse/gsub obfuscation detection
+fc4829f	1.0000	1.0000	1.0000	11	0	4	0	keep	expand embedded ZIP detection to GIF/BMP
+c98e83b	1.0000	1.0000	1.0000	11	0	4	0	keep	add Lua table.concat byte assembly and dynamic loadfile
+56715cf	1.0000	1.0000	1.0000	11	0	4	0	keep	add C# thread and crypto detection
+6bcc3ae	1.0000	1.0000	1.0000	11	0	4	0	keep	detect extensionless executable files
+f856297	1.0000	1.0000	1.0000	11	0	4	0	keep	add Lua global metatable hooking detection
+8e9253a	1.0000	1.0000	1.0000	11	0	4	0	keep	add batch/shell script malware detection
+179c0e0	1.0000	1.0000	1.0000	11	0	4	0	keep	expand whitelisted DLLs for modding frameworks

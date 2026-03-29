@@ -104,6 +104,109 @@ fn build_rules() -> Vec<StaticRule> {
         extensions: lua_ext,
     });
 
+    rules.push(StaticRule {
+        id: "LUA-HOOK-001",
+        name: "Lua metatable hooking",
+        severity: Severity::Medium,
+        pattern: Regex::new(r#"setmetatable\s*\(\s*_G"#).unwrap(),
+        description: "setmetatable on _G — can intercept all global variable access for hooking",
+        extensions: lua_ext,
+    });
+
+    rules.push(StaticRule {
+        id: "LUA-OBFUSC-006",
+        name: "Lua table.concat byte assembly",
+        severity: Severity::Medium,
+        pattern: Regex::new(r#"table\s*\.\s*concat\s*\(\s*\{.*string\s*\.\s*char"#).unwrap(),
+        description: "table.concat with string.char — assembling strings byte-by-byte to hide content",
+        extensions: lua_ext,
+    });
+    rules.push(StaticRule {
+        id: "LUA-EXEC-005",
+        name: "Lua dofile/loadfile from variable",
+        severity: Severity::High,
+        pattern: Regex::new(r#"(dofile|loadfile)\s*\(\s*[a-zA-Z_]"#).unwrap(),
+        description: "dofile/loadfile with variable path — loading code from a dynamic location",
+        extensions: lua_ext,
+    });
+
+    rules.push(StaticRule {
+        id: "LUA-OBFUSC-004",
+        name: "Lua string.reverse obfuscation",
+        severity: Severity::High,
+        pattern: Regex::new(r#"string\s*\.\s*reverse\s*\("#).unwrap(),
+        description: "string.reverse() — commonly used to obfuscate strings and evade pattern matching",
+        extensions: lua_ext,
+    });
+    rules.push(StaticRule {
+        id: "LUA-OBFUSC-005",
+        name: "Lua string.gsub heavy transformation",
+        severity: Severity::Medium,
+        pattern: Regex::new(r#"string\s*\.\s*gsub\s*\([^,]+,\s*['\"]."#).unwrap(),
+        description: "string.gsub with single-char replacement — may be decoding obfuscated strings",
+        extensions: lua_ext,
+    });
+
+    rules.push(StaticRule {
+        id: "LUA-EVASION-001",
+        name: "Lua error-suppressed code execution",
+        severity: Severity::High,
+        pattern: Regex::new(r#"pcall\s*\(\s*(loadstring|load|dofile)"#).unwrap(),
+        description: "pcall wrapping loadstring/load — error suppression around dynamic code execution",
+        extensions: lua_ext,
+    });
+
+    rules.push(StaticRule {
+        id: "LUA-OBFUSC-003",
+        name: "Lua function serialization",
+        severity: Severity::High,
+        pattern: Regex::new(r#"string\s*\.\s*dump\s*\("#).unwrap(),
+        description: "string.dump() serializes a function to binary — used for obfuscation",
+        extensions: lua_ext,
+    });
+    rules.push(StaticRule {
+        id: "LUA-ENV-001",
+        name: "Lua environment manipulation",
+        severity: Severity::High,
+        pattern: Regex::new(r#"\b_ENV\s*[\[=]"#).unwrap(),
+        description: "Direct _ENV manipulation — can override all global functions in Lua 5.2+",
+        extensions: lua_ext,
+    });
+
+    rules.push(StaticRule {
+        id: "LUA-FFI-001",
+        name: "Lua FFI access",
+        severity: Severity::Critical,
+        pattern: Regex::new(r#"require\s*\(?['\"]ffi['\"]"#).unwrap(),
+        description: "Lua FFI module — allows calling native C functions, bypassing all sandboxing",
+        extensions: lua_ext,
+    });
+    rules.push(StaticRule {
+        id: "LUA-GLOBAL-001",
+        name: "Lua global table manipulation",
+        severity: Severity::Medium,
+        pattern: Regex::new(r#"rawset\s*\(\s*_G"#).unwrap(),
+        description: "Direct manipulation of global table — may inject or override functions",
+        extensions: lua_ext,
+    });
+
+    rules.push(StaticRule {
+        id: "LUA-NET-002",
+        name: "Lua dofile/loadfile with URL",
+        severity: Severity::Critical,
+        pattern: Regex::new(r#"(dofile|loadfile)\s*\(\s*['\"]https?://"#).unwrap(),
+        description: "dofile/loadfile with a URL argument — loading and executing remote code",
+        extensions: lua_ext,
+    });
+    rules.push(StaticRule {
+        id: "LUA-OBFUSC-002",
+        name: "Lua Base64 decode pattern",
+        severity: Severity::Medium,
+        pattern: Regex::new(r#"(base64|b64|decode|from_base64)\s*\("#).unwrap(),
+        description: "Base64 decoding pattern — may be hiding malicious payload",
+        extensions: lua_ext,
+    });
+
     // === C# RULES (for RimWorld Assemblies DLLs decompiled or source) ===
     let cs_ext: &[&str] = &["cs"];
 
@@ -140,6 +243,63 @@ fn build_rules() -> Vec<StaticRule> {
         extensions: cs_ext,
     });
 
+    rules.push(StaticRule {
+        id: "CS-THREAD-001",
+        name: "C# background thread creation",
+        severity: Severity::Medium,
+        pattern: Regex::new(r#"new\s+Thread\s*\(|ThreadPool\.QueueUserWorkItem"#).unwrap(),
+        description: "Creating background threads — could be performing covert operations",
+        extensions: cs_ext,
+    });
+    rules.push(StaticRule {
+        id: "CS-CRYPTO-001",
+        name: "C# cryptographic operations",
+        severity: Severity::Medium,
+        pattern: Regex::new(r#"(AesCryptoServiceProvider|RijndaelManaged|RSACryptoServiceProvider|TripleDES)"#).unwrap(),
+        description: "Cryptographic operations — could be encrypting exfiltrated data or ransomware",
+        extensions: cs_ext,
+    });
+
+    rules.push(StaticRule {
+        id: "CS-UNSAFE-001",
+        name: "C# unsafe code block",
+        severity: Severity::Medium,
+        pattern: Regex::new(r#"\bunsafe\s*\{"#).unwrap(),
+        description: "Unsafe code block — direct memory manipulation, unusual for game mods",
+        extensions: cs_ext,
+    });
+    rules.push(StaticRule {
+        id: "CS-MARSHAL-001",
+        name: "C# Marshal interop",
+        severity: Severity::Medium,
+        pattern: Regex::new(
+            r#"Marshal\s*\.\s*(Copy|PtrToStructure|AllocHGlobal|ReadByte|WriteByte)"#,
+        )
+        .unwrap(),
+        description: "Marshal interop — low-level memory manipulation, unusual for game mods",
+        extensions: cs_ext,
+    });
+
+    rules.push(StaticRule {
+        id: "CS-REFLECT-002",
+        name: "C# runtime code generation",
+        severity: Severity::High,
+        pattern: Regex::new(r#"(Reflection\.Emit|DynamicMethod|ILGenerator)"#).unwrap(),
+        description: "Runtime IL code generation via Reflection.Emit — can create executable code at runtime",
+        extensions: cs_ext,
+    });
+    rules.push(StaticRule {
+        id: "CS-RECON-001",
+        name: "C# system reconnaissance",
+        severity: Severity::Medium,
+        pattern: Regex::new(
+            r#"Environment\s*\.\s*(UserName|MachineName|UserDomainName|OSVersion)"#,
+        )
+        .unwrap(),
+        description: "Querying system identity info — may be fingerprinting the host",
+        extensions: cs_ext,
+    });
+
     // === PYTHON RULES ===
     let py_ext: &[&str] = &["py"];
 
@@ -172,6 +332,158 @@ fn build_rules() -> Vec<StaticRule> {
         extensions: py_ext,
     });
 
+    // === BATCH/SHELL RULES ===
+    let batch_ext: &[&str] = &["bat", "cmd"];
+
+    rules.push(StaticRule {
+        id: "BATCH-EXEC-001",
+        name: "Batch file dangerous command",
+        severity: Severity::Critical,
+        pattern: Regex::new(r#"(?i)(powershell|certutil|bitsadmin|mshta|regsvr32|rundll32)\s"#)
+            .unwrap(),
+        description: "Batch file executing dangerous system utility — potential malware dropper",
+        extensions: batch_ext,
+    });
+
+    // === SHELL SCRIPT RULES ===
+    let sh_ext: &[&str] = &["sh", "bash", "zsh"];
+
+    rules.push(StaticRule {
+        id: "SH-EXEC-001",
+        name: "Shell script reverse shell",
+        severity: Severity::Critical,
+        pattern: Regex::new(r#"/dev/tcp/|nc\s+-[a-z]*e|bash\s+-i\s+>&"#).unwrap(),
+        description: "Reverse shell pattern — establishing remote command execution",
+        extensions: sh_ext,
+    });
+    rules.push(StaticRule {
+        id: "SH-DOWNLOAD-001",
+        name: "Shell script download and execute",
+        severity: Severity::Critical,
+        pattern: Regex::new(r#"(curl|wget)\s+.*\|\s*(bash|sh|zsh)"#).unwrap(),
+        description: "Download and pipe to shell — common malware delivery technique",
+        extensions: sh_ext,
+    });
+
+    // === VDF/STEAM RULES ===
+    let vdf_ext: &[&str] = &["vdf", "acf"];
+
+    rules.push(StaticRule {
+        id: "STEAM-INSTALL-001",
+        name: "Steam InstallScript detected",
+        severity: Severity::High,
+        pattern: Regex::new(r#"(?i)"InstallScript""#).unwrap(),
+        description: "Steam VDF InstallScript — runs arbitrary commands during mod installation",
+        extensions: vdf_ext,
+    });
+    rules.push(StaticRule {
+        id: "STEAM-RUN-001",
+        name: "Steam VDF Run entry",
+        severity: Severity::Critical,
+        pattern: Regex::new(r#"(?i)"Run"\s+"[^"]*\.(exe|bat|cmd|ps1|sh)"#).unwrap(),
+        description: "Steam VDF Run entry pointing to executable — auto-execution on install",
+        extensions: vdf_ext,
+    });
+
+    // === XML RULES ===
+    let xml_ext: &[&str] = &["xml"];
+
+    rules.push(StaticRule {
+        id: "XML-SCRIPT-001",
+        name: "Script tag in XML",
+        severity: Severity::High,
+        pattern: Regex::new(r#"<script[\s>]"#).unwrap(),
+        description: "Script tag in XML file — possible XSS or code injection in mod metadata",
+        extensions: xml_ext,
+    });
+
+    // === JAVASCRIPT RULES ===
+    let js_ext: &[&str] = &["js", "ts"];
+
+    rules.push(StaticRule {
+        id: "JS-EXEC-001",
+        name: "JavaScript eval()",
+        severity: Severity::High,
+        pattern: Regex::new(r#"\beval\s*\("#).unwrap(),
+        description: "eval() executes arbitrary code — common obfuscation technique",
+        extensions: js_ext,
+    });
+    rules.push(StaticRule {
+        id: "JS-EXEC-002",
+        name: "JavaScript Function constructor",
+        severity: Severity::High,
+        pattern: Regex::new(r#"new\s+Function\s*\("#).unwrap(),
+        description: "new Function() creates executable code from strings",
+        extensions: js_ext,
+    });
+    rules.push(StaticRule {
+        id: "JS-NET-001",
+        name: "JavaScript fetch/XMLHttpRequest",
+        severity: Severity::Medium,
+        pattern: Regex::new(
+            r#"(fetch\s*\(\s*['\"]https?://|new\s+XMLHttpRequest|\.open\s*\(\s*['\"](?:GET|POST))"#,
+        )
+        .unwrap(),
+        description: "Network request from mod code — mods should not need internet access",
+        extensions: js_ext,
+    });
+    rules.push(StaticRule {
+        id: "JS-EXEC-003",
+        name: "JavaScript child_process",
+        severity: Severity::Critical,
+        pattern: Regex::new(r#"require\s*\(\s*['\"]child_process['\"]"#).unwrap(),
+        description: "Node.js child_process — can execute system commands",
+        extensions: js_ext,
+    });
+
+    // === POWERSHELL RULES ===
+    let ps_ext: &[&str] = &["ps1", "psm1", "psd1"];
+
+    rules.push(StaticRule {
+        id: "PS-ENCODED-001",
+        name: "PowerShell encoded command",
+        severity: Severity::Critical,
+        pattern: Regex::new(r#"(?i)(-EncodedCommand|-enc|-e)\s+[A-Za-z0-9+/=]{20,}"#).unwrap(),
+        description: "PowerShell encoded command — commonly used to hide malicious payloads",
+        extensions: ps_ext,
+    });
+    rules.push(StaticRule {
+        id: "PS-DOWNLOAD-001",
+        name: "PowerShell download cradle",
+        severity: Severity::Critical,
+        pattern: Regex::new(
+            r#"(?i)(Invoke-WebRequest|Invoke-RestMethod|Net\.WebClient|DownloadString|DownloadFile|wget|curl)"#,
+        )
+        .unwrap(),
+        description: "PowerShell download cradle — fetching remote content",
+        extensions: ps_ext,
+    });
+
+    rules.push(StaticRule {
+        id: "PY-FFI-001",
+        name: "Python ctypes FFI",
+        severity: Severity::High,
+        pattern: Regex::new(r#"ctypes\.(windll|cdll|CDLL|WinDLL)"#).unwrap(),
+        description: "ctypes FFI — calling native code from Python, bypasses sandboxing",
+        extensions: py_ext,
+    });
+    rules.push(StaticRule {
+        id: "PY-IMPORT-001",
+        name: "Python dynamic import",
+        severity: Severity::Medium,
+        pattern: Regex::new(r#"__import__\s*\(|importlib\.import_module\s*\("#).unwrap(),
+        description: "Dynamic module import — can load arbitrary Python modules at runtime",
+        extensions: py_ext,
+    });
+    rules.push(StaticRule {
+        id: "PY-KEYLOG-001",
+        name: "Python keyboard hooking",
+        severity: Severity::Critical,
+        pattern: Regex::new(r#"(pynput|keyboard\.on_press|SetWindowsHookEx)"#).unwrap(),
+        description: "Keyboard hooking/keylogging capability detected",
+        extensions: py_ext,
+    });
+
     // === WOW-SPECIFIC LUA RULES ===
     rules.push(StaticRule {
         id: "WOW-SANDBOX-001",
@@ -187,6 +499,24 @@ fn build_rules() -> Vec<StaticRule> {
         severity: Severity::Medium,
         pattern: Regex::new(r#"SendAddonMessage\s*\(\s*['\"][^'\"]{20,}['\"]"#).unwrap(),
         description: "SendAddonMessage with a long prefix  - possible covert communication channel",
+        extensions: lua_ext,
+    });
+
+    rules.push(StaticRule {
+        id: "WOW-SECURITY-001",
+        name: "WoW securecall bypass attempt",
+        severity: Severity::High,
+        pattern: Regex::new(r#"(hooksecurefunc|issecurevariable)\s*\("#).unwrap(),
+        description: "Hooking or checking secure functions — possible Blizzard API abuse",
+        extensions: lua_ext,
+    });
+
+    rules.push(StaticRule {
+        id: "WOW-INJECT-001",
+        name: "WoW RunScript code injection",
+        severity: Severity::High,
+        pattern: Regex::new(r#"RunScript\s*\(\s*[^)]*\.\."#).unwrap(),
+        description: "RunScript with string concatenation — dynamic code injection in WoW addon",
         extensions: lua_ext,
     });
 
