@@ -261,6 +261,18 @@ fn build_rules() -> Vec<StaticRule> {
         extensions: py_ext,
     });
 
+    // === XML RULES ===
+    let xml_ext: &[&str] = &["xml"];
+
+    rules.push(StaticRule {
+        id: "XML-SCRIPT-001",
+        name: "Script tag in XML",
+        severity: Severity::High,
+        pattern: Regex::new(r#"<script[\s>]"#).unwrap(),
+        description: "Script tag in XML file — possible XSS or code injection in mod metadata",
+        extensions: xml_ext,
+    });
+
     // === JAVASCRIPT RULES ===
     let js_ext: &[&str] = &["js", "ts"];
 
