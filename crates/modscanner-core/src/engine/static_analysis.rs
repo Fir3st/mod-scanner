@@ -385,6 +385,15 @@ fn build_rules() -> Vec<StaticRule> {
     });
 
     rules.push(StaticRule {
+        id: "WOW-SECURITY-001",
+        name: "WoW securecall bypass attempt",
+        severity: Severity::High,
+        pattern: Regex::new(r#"(hooksecurefunc|issecurevariable)\s*\("#).unwrap(),
+        description: "Hooking or checking secure functions — possible Blizzard API abuse",
+        extensions: lua_ext,
+    });
+
+    rules.push(StaticRule {
         id: "WOW-INJECT-001",
         name: "WoW RunScript code injection",
         severity: Severity::High,
