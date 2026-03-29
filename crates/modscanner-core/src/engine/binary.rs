@@ -490,6 +490,17 @@ const WHITELISTED_DLLS: &[&str] = &[
     "cecil",
     "lunarframework",
     "lunarloader",
+    "publicizer",
+    "prepatcher",
+    "bepinex",
+    "doorstop",
+    "melonloader",
+    "modloader",
+    "rocketmod",
+    "newtonsoft.json",
+    "yamldotnet",
+    "nlog",
+    "log4net",
 ];
 
 fn is_whitelisted_dll(path: &std::path::Path) -> bool {
