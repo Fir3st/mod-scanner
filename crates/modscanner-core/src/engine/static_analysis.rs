@@ -105,6 +105,23 @@ fn build_rules() -> Vec<StaticRule> {
     });
 
     rules.push(StaticRule {
+        id: "LUA-FFI-001",
+        name: "Lua FFI access",
+        severity: Severity::Critical,
+        pattern: Regex::new(r#"require\s*\(?['\"]ffi['\"]"#).unwrap(),
+        description: "Lua FFI module — allows calling native C functions, bypassing all sandboxing",
+        extensions: lua_ext,
+    });
+    rules.push(StaticRule {
+        id: "LUA-GLOBAL-001",
+        name: "Lua global table manipulation",
+        severity: Severity::Medium,
+        pattern: Regex::new(r#"rawset\s*\(\s*_G"#).unwrap(),
+        description: "Direct manipulation of global table — may inject or override functions",
+        extensions: lua_ext,
+    });
+
+    rules.push(StaticRule {
         id: "LUA-NET-002",
         name: "Lua dofile/loadfile with URL",
         severity: Severity::Critical,
