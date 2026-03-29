@@ -4,12 +4,8 @@ pub mod report;
 pub mod scanner;
 
 use engine::{
-    DetectionEngine,
-    filetype::FiletypeEngine,
-    unicode::UnicodeEngine,
-    binary::BinaryEngine,
-    static_analysis::StaticAnalysisEngine,
-    polyglot::PolyglotEngine,
+    DetectionEngine, binary::BinaryEngine, filetype::FiletypeEngine, polyglot::PolyglotEngine,
+    static_analysis::StaticAnalysisEngine, unicode::UnicodeEngine,
 };
 
 /// Create all detection engines with default configuration

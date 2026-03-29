@@ -5,6 +5,12 @@ use super::{DetectionEngine, FileContext, Finding, Severity};
 /// but processed by ZIP tools). Also detects trailing data after format end markers.
 pub struct PolyglotEngine;
 
+impl Default for PolyglotEngine {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl PolyglotEngine {
     pub fn new() -> Self {
         Self
@@ -16,7 +22,6 @@ impl PolyglotEngine {
 const PNG_MAGIC: &[u8] = b"\x89PNG\r\n\x1a\n";
 const PNG_IEND: &[u8] = b"IEND\xaeB`\x82";
 const ZIP_LOCAL_HEADER: &[u8] = b"PK\x03\x04";
-const ZIP_CENTRAL_DIR: &[u8] = b"PK\x01\x02";
 const PE_MAGIC: &[u8] = b"MZ";
 const ELF_MAGIC: &[u8] = b"\x7fELF";
 const PDF_MAGIC: &[u8] = b"%PDF";
@@ -310,7 +315,11 @@ mod tests {
         let engine = PolyglotEngine::new();
         assert!(engine.should_scan(&ctx));
         let findings = engine.scan(&ctx);
-        assert!(findings.iter().any(|f| f.matched_rule.as_deref() == Some("POLYGLOT-PNG-ZIP")));
+        assert!(
+            findings
+                .iter()
+                .any(|f| f.matched_rule.as_deref() == Some("POLYGLOT-PNG-ZIP"))
+        );
     }
 
     #[test]
@@ -326,7 +335,11 @@ mod tests {
         let ctx = make_ctx(path, &data);
         let engine = PolyglotEngine::new();
         let findings = engine.scan(&ctx);
-        assert!(findings.iter().any(|f| f.matched_rule.as_deref() == Some("POLYGLOT-PNG-PE")));
+        assert!(
+            findings
+                .iter()
+                .any(|f| f.matched_rule.as_deref() == Some("POLYGLOT-PNG-PE"))
+        );
     }
 
     #[test]

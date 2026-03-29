@@ -8,6 +8,12 @@ use goblin::Object;
 /// - .NET metadata strings for dangerous API patterns
 pub struct BinaryEngine;
 
+impl Default for BinaryEngine {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl BinaryEngine {
     pub fn new() -> Self {
         Self
@@ -43,52 +49,136 @@ const SUSPICIOUS_NATIVE_IMPORTS: &[(&str, &str, Severity)] = &[
     ("wininet.dll", "Windows Internet API", Severity::High),
     ("winhttp.dll", "Windows HTTP Services", Severity::High),
     ("crypt32.dll", "Windows Cryptography", Severity::Medium),
-    ("bcrypt.dll", "Windows Cryptography (Next Gen)", Severity::Medium),
+    (
+        "bcrypt.dll",
+        "Windows Cryptography (Next Gen)",
+        Severity::Medium,
+    ),
 ];
 
 /// Suspicious .NET API patterns found as strings in managed DLLs.
 /// These indicate dangerous capabilities for a game mod.
 const SUSPICIOUS_DOTNET_STRINGS: &[(&str, &str, Severity)] = &[
     // Network access
-    ("System.Net.Http", "HTTP client  - network access", Severity::High),
-    ("System.Net.Sockets", "Raw socket access", Severity::Critical),
-    ("System.Net.WebClient", "Web client  - can download/upload data", Severity::High),
+    (
+        "System.Net.Http",
+        "HTTP client  - network access",
+        Severity::High,
+    ),
+    (
+        "System.Net.Sockets",
+        "Raw socket access",
+        Severity::Critical,
+    ),
+    (
+        "System.Net.WebClient",
+        "Web client  - can download/upload data",
+        Severity::High,
+    ),
     ("HttpClient", "HTTP client usage", Severity::High),
-    ("WebRequest", "Web request  - network access", Severity::High),
-    ("TcpClient", "TCP client  - raw network connection", Severity::Critical),
-    ("UdpClient", "UDP client  - raw network connection", Severity::High),
+    (
+        "WebRequest",
+        "Web request  - network access",
+        Severity::High,
+    ),
+    (
+        "TcpClient",
+        "TCP client  - raw network connection",
+        Severity::Critical,
+    ),
+    (
+        "UdpClient",
+        "UDP client  - raw network connection",
+        Severity::High,
+    ),
     // Process execution
-    ("System.Diagnostics.Process", "Can launch external processes", Severity::Critical),
-    ("ProcessStartInfo", "Process launch configuration", Severity::Critical),
+    (
+        "System.Diagnostics.Process",
+        "Can launch external processes",
+        Severity::Critical,
+    ),
+    (
+        "ProcessStartInfo",
+        "Process launch configuration",
+        Severity::Critical,
+    ),
     ("cmd.exe", "Command shell reference", Severity::Critical),
     ("powershell", "PowerShell reference", Severity::Critical),
     ("/bin/sh", "Unix shell reference", Severity::Critical),
     ("/bin/bash", "Bash shell reference", Severity::Critical),
     // File system beyond game scope
-    ("Microsoft.Win32.Registry", "Windows Registry access", Severity::High),
+    (
+        "Microsoft.Win32.Registry",
+        "Windows Registry access",
+        Severity::High,
+    ),
     ("RegistryKey", "Registry key manipulation", Severity::High),
-    ("Environment.GetFolderPath", "Accessing system folders", Severity::Medium),
+    (
+        "Environment.GetFolderPath",
+        "Accessing system folders",
+        Severity::Medium,
+    ),
     ("AppData", "AppData directory reference", Severity::Medium),
     // Credential theft patterns (fractureiser-style)
-    (".minecraft", "Minecraft directory reference (credential theft?)", Severity::High),
-    ("discord", "Discord reference (token theft?)", Severity::Medium),
-    ("chrome", "Chrome reference (cookie/credential theft?)", Severity::Medium),
-    ("firefox", "Firefox reference (cookie/credential theft?)", Severity::Medium),
+    (
+        ".minecraft",
+        "Minecraft directory reference (credential theft?)",
+        Severity::High,
+    ),
+    (
+        "discord",
+        "Discord reference (token theft?)",
+        Severity::Medium,
+    ),
+    (
+        "chrome",
+        "Chrome reference (cookie/credential theft?)",
+        Severity::Medium,
+    ),
+    (
+        "firefox",
+        "Firefox reference (cookie/credential theft?)",
+        Severity::Medium,
+    ),
     ("wallet", "Cryptocurrency wallet reference", Severity::High),
     ("bitcoin", "Bitcoin reference", Severity::Medium),
     ("ethereum", "Ethereum reference", Severity::Medium),
     ("metamask", "MetaMask reference", Severity::High),
     // Dynamic code loading
     ("Assembly.Load", "Dynamic assembly loading", Severity::High),
-    ("Assembly.LoadFrom", "Loading assembly from path", Severity::High),
-    ("Assembly.LoadFile", "Loading assembly from file", Severity::High),
-    ("Activator.CreateInstance", "Dynamic object instantiation", Severity::Medium),
-    ("Type.InvokeMember", "Reflection-based method invocation", Severity::Medium),
+    (
+        "Assembly.LoadFrom",
+        "Loading assembly from path",
+        Severity::High,
+    ),
+    (
+        "Assembly.LoadFile",
+        "Loading assembly from file",
+        Severity::High,
+    ),
+    (
+        "Activator.CreateInstance",
+        "Dynamic object instantiation",
+        Severity::Medium,
+    ),
+    (
+        "Type.InvokeMember",
+        "Reflection-based method invocation",
+        Severity::Medium,
+    ),
     ("DllImport", "P/Invoke native code", Severity::Medium),
     // Clipboard (crypto address swapping)
-    ("Clipboard", "Clipboard access (address swapping?)", Severity::Medium),
+    (
+        "Clipboard",
+        "Clipboard access (address swapping?)",
+        Severity::Medium,
+    ),
     ("SetClipboardData", "Setting clipboard data", Severity::High),
-    ("GetClipboardData", "Reading clipboard data", Severity::Medium),
+    (
+        "GetClipboardData",
+        "Reading clipboard data",
+        Severity::Medium,
+    ),
 ];
 
 /// Known packer section names
@@ -104,7 +194,12 @@ const PACKER_SECTIONS: &[(&str, &str)] = &[
     (".vmp1", "VMProtect"),
 ];
 
-fn analyze_pe(data: &[u8], pe: &goblin::pe::PE, findings: &mut Vec<Finding>, path: &std::path::Path) {
+fn analyze_pe(
+    data: &[u8],
+    pe: &goblin::pe::PE,
+    findings: &mut Vec<Finding>,
+    path: &std::path::Path,
+) {
     // Check PE imports for suspicious DLLs
     for import in &pe.imports {
         let dll_lower = import.dll.to_lowercase();
@@ -122,7 +217,10 @@ fn analyze_pe(data: &[u8], pe: &goblin::pe::PE, findings: &mut Vec<Finding>, pat
                     file_path: path.to_path_buf(),
                     byte_offset: None,
                     line_number: None,
-                    matched_rule: Some(format!("BINARY-PE-IMPORT-{}", suspicious_dll.to_uppercase().replace('.', "-"))),
+                    matched_rule: Some(format!(
+                        "BINARY-PE-IMPORT-{}",
+                        suspicious_dll.to_uppercase().replace('.', "-")
+                    )),
                 });
             }
         }
@@ -158,9 +256,7 @@ fn analyze_pe(data: &[u8], pe: &goblin::pe::PE, findings: &mut Vec<Finding>, pat
                 findings.push(Finding {
                     engine_name: "binary",
                     severity: Severity::High,
-                    title: format!(
-                        "High entropy section \"{name}\" ({entropy:.2})"
-                    ),
+                    title: format!("High entropy section \"{name}\" ({entropy:.2})"),
                     description: format!(
                         "Section \"{name}\" has entropy {entropy:.2}/8.0, suggesting \
                          encrypted or compressed content. Normal code sections have \
@@ -213,7 +309,12 @@ fn find_bytes(haystack: &[u8], needle: &[u8]) -> Option<usize> {
         .position(|window| window == needle)
 }
 
-fn analyze_elf(data: &[u8], _elf: &goblin::elf::Elf, findings: &mut Vec<Finding>, path: &std::path::Path) {
+fn analyze_elf(
+    data: &[u8],
+    _elf: &goblin::elf::Elf,
+    findings: &mut Vec<Finding>,
+    path: &std::path::Path,
+) {
     // Overall entropy check
     if data.len() > 1024 {
         let entropy = shannon_entropy(data);
@@ -260,7 +361,9 @@ fn is_whitelisted_dll(path: &std::path::Path) -> bool {
         .and_then(|s| s.to_str())
         .is_some_and(|name| {
             let lower = name.to_lowercase();
-            WHITELISTED_DLLS.iter().any(|&w| lower == w || lower.starts_with(&format!("{w}.")))
+            WHITELISTED_DLLS
+                .iter()
+                .any(|&w| lower == w || lower.starts_with(&format!("{w}.")))
         })
 }
 
@@ -285,7 +388,7 @@ impl DetectionEngine for BinaryEngine {
         // (this catches disguised binaries that passed filetype engine)
         ctx.data.len() >= 4
             && ((ctx.data[0] == b'M' && ctx.data[1] == b'Z')  // PE
-                || (ctx.data[0] == 0x7f && ctx.data[1] == b'E' && ctx.data[2] == b'L' && ctx.data[3] == b'F'))  // ELF
+                || (ctx.data[0] == 0x7f && ctx.data[1] == b'E' && ctx.data[2] == b'L' && ctx.data[3] == b'F')) // ELF
     }
 
     fn scan(&self, ctx: &FileContext) -> Vec<Finding> {
@@ -350,7 +453,10 @@ mod tests {
             }
         }
         let e = shannon_entropy(&data);
-        assert!(e > 7.9, "Uniform random data should have ~8.0 entropy, got {e}");
+        assert!(
+            e > 7.9,
+            "Uniform random data should have ~8.0 entropy, got {e}"
+        );
     }
 
     #[test]

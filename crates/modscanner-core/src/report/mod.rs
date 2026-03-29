@@ -6,46 +6,48 @@ use serde::Serialize;
 /// Print a scan report to the terminal with colors
 pub fn print_terminal_report(report: &ScanReport) {
     println!();
-    println!(
-        "{}",
-        "=== ModScanner Report ===".bold()
-    );
-    println!(
-        "  Path:     {}",
-        report.root_path.display()
-    );
-    println!(
-        "  Scanned:  {} files",
-        report.scanned_files
-    );
-    println!(
-        "  Duration: {:.2}s",
-        report.duration.as_secs_f64()
-    );
+    println!("{}", "=== ModScanner Report ===".bold());
+    println!("  Path:     {}", report.root_path.display());
+    println!("  Scanned:  {} files", report.scanned_files);
+    println!("  Duration: {:.2}s", report.duration.as_secs_f64());
 
     if !report.errors.is_empty() {
-        println!(
-            "  Errors:   {}",
-            report.errors.len().yellow()
-        );
+        println!("  Errors:   {}", report.errors.len().yellow());
     }
 
     println!();
 
     if report.findings.is_empty() {
-        println!(
-            "  {} No threats detected.",
-            "✓".green().bold()
-        );
+        println!("  {} No threats detected.", "✓".green().bold());
         println!();
         return;
     }
 
-    let critical = report.findings.iter().filter(|f| f.severity == Severity::Critical).count();
-    let high = report.findings.iter().filter(|f| f.severity == Severity::High).count();
-    let medium = report.findings.iter().filter(|f| f.severity == Severity::Medium).count();
-    let low = report.findings.iter().filter(|f| f.severity == Severity::Low).count();
-    let info = report.findings.iter().filter(|f| f.severity == Severity::Info).count();
+    let critical = report
+        .findings
+        .iter()
+        .filter(|f| f.severity == Severity::Critical)
+        .count();
+    let high = report
+        .findings
+        .iter()
+        .filter(|f| f.severity == Severity::High)
+        .count();
+    let medium = report
+        .findings
+        .iter()
+        .filter(|f| f.severity == Severity::Medium)
+        .count();
+    let low = report
+        .findings
+        .iter()
+        .filter(|f| f.severity == Severity::Low)
+        .count();
+    let info = report
+        .findings
+        .iter()
+        .filter(|f| f.severity == Severity::Info)
+        .count();
 
     println!(
         "  {} findings: {} critical, {} high, {} medium, {} low, {} info",
@@ -155,11 +157,31 @@ pub fn print_json_report(report: &ScanReport) {
         findings: report.findings.iter().map(JsonFinding::from).collect(),
         errors: report.errors.clone(),
         summary: JsonSummary {
-            critical: report.findings.iter().filter(|f| f.severity == Severity::Critical).count(),
-            high: report.findings.iter().filter(|f| f.severity == Severity::High).count(),
-            medium: report.findings.iter().filter(|f| f.severity == Severity::Medium).count(),
-            low: report.findings.iter().filter(|f| f.severity == Severity::Low).count(),
-            info: report.findings.iter().filter(|f| f.severity == Severity::Info).count(),
+            critical: report
+                .findings
+                .iter()
+                .filter(|f| f.severity == Severity::Critical)
+                .count(),
+            high: report
+                .findings
+                .iter()
+                .filter(|f| f.severity == Severity::High)
+                .count(),
+            medium: report
+                .findings
+                .iter()
+                .filter(|f| f.severity == Severity::Medium)
+                .count(),
+            low: report
+                .findings
+                .iter()
+                .filter(|f| f.severity == Severity::Low)
+                .count(),
+            info: report
+                .findings
+                .iter()
+                .filter(|f| f.severity == Severity::Info)
+                .count(),
             total: report.findings.len(),
         },
     };
@@ -169,7 +191,11 @@ pub fn print_json_report(report: &ScanReport) {
 
 /// Determine exit code from findings
 pub fn exit_code(report: &ScanReport) -> i32 {
-    if report.findings.iter().any(|f| f.severity == Severity::Critical) {
+    if report
+        .findings
+        .iter()
+        .any(|f| f.severity == Severity::Critical)
+    {
         2
     } else if report
         .findings

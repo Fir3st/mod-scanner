@@ -36,7 +36,7 @@ fn is_likely_text(data: &[u8]) -> bool {
     let check_len = data.len().min(TEXT_CHECK_SIZE);
     let slice = &data[..check_len];
     // Text files don't contain null bytes or most control chars (except \t, \n, \r)
-    !slice.iter().any(|&b| b == 0)
+    !slice.contains(&0)
 }
 
 /// Load a file and return owned data + metadata
@@ -66,11 +66,7 @@ pub fn load_file(path: &Path) -> Result<(FileData, u64), FileLoadError> {
 }
 
 /// Build a FileContext from loaded file data
-pub fn build_context<'a>(
-    path: &'a Path,
-    data: &'a [u8],
-    size: u64,
-) -> FileContext<'a> {
+pub fn build_context<'a>(path: &'a Path, data: &'a [u8], size: u64) -> FileContext<'a> {
     let extension = path.extension().and_then(|e| e.to_str());
     let is_text = is_likely_text(data);
 

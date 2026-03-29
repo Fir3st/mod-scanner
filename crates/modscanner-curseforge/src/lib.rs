@@ -3,6 +3,12 @@ use std::path::PathBuf;
 
 pub struct CurseForgePlatform;
 
+impl Default for CurseForgePlatform {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl CurseForgePlatform {
     pub fn new() -> Self {
         Self

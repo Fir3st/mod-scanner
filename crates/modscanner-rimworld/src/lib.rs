@@ -3,6 +3,12 @@ use std::path::{Path, PathBuf};
 
 pub struct RimWorldPlatform;
 
+impl Default for RimWorldPlatform {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl RimWorldPlatform {
     pub fn new() -> Self {
         Self
@@ -21,10 +27,7 @@ fn steam_library_roots() -> Vec<PathBuf> {
         roots.push(PathBuf::from(r"C:\Program Files\Steam"));
         // Check additional drives
         for drive in b'D'..=b'Z' {
-            roots.push(PathBuf::from(format!(
-                "{}:\\SteamLibrary",
-                drive as char
-            )));
+            roots.push(PathBuf::from(format!("{}:\\SteamLibrary", drive as char)));
         }
     }
 
@@ -102,11 +105,7 @@ fn find_steam_workshop(steam_root: &Path) -> Option<PathBuf> {
 /// Find Steam manual mods path (steamapps/common/RimWorld/Mods)
 fn find_steam_mods(steam_root: &Path) -> Option<PathBuf> {
     let mods = steam_root.join("steamapps/common/RimWorld/Mods");
-    if mods.is_dir() {
-        Some(mods)
-    } else {
-        None
-    }
+    if mods.is_dir() { Some(mods) } else { None }
 }
 
 /// Find GOG mods path
@@ -153,11 +152,7 @@ fn extract_xml_tag(xml: &str, tag: &str) -> Option<String> {
     let start = xml.find(&open)? + open.len();
     let end = xml[start..].find(&close)? + start;
     let value = xml[start..end].trim().to_string();
-    if value.is_empty() {
-        None
-    } else {
-        Some(value)
-    }
+    if value.is_empty() { None } else { Some(value) }
 }
 
 impl Platform for RimWorldPlatform {
@@ -204,55 +199,46 @@ impl Platform for RimWorldPlatform {
         match instance.variant.as_str() {
             "Steam" => {
                 // Workshop mods: each subdirectory is a mod
-                if let Some(workshop) = find_steam_workshop(&instance.root_path) {
-                    if let Ok(entries) = std::fs::read_dir(&workshop) {
-                        for entry in entries.flatten() {
-                            if entry.path().is_dir() {
-                                dirs.push(ModDirectory {
-                                    path: entry.path(),
-                                    game_id: Some(RIMWORLD_STEAM_APPID.into()),
-                                    mod_id: entry
-                                        .file_name()
-                                        .to_str()
-                                        .map(|s| s.to_string()),
-                                });
-                            }
+                if let Some(workshop) = find_steam_workshop(&instance.root_path)
+                    && let Ok(entries) = std::fs::read_dir(&workshop)
+                {
+                    for entry in entries.flatten() {
+                        if entry.path().is_dir() {
+                            dirs.push(ModDirectory {
+                                path: entry.path(),
+                                game_id: Some(RIMWORLD_STEAM_APPID.into()),
+                                mod_id: entry.file_name().to_str().map(|s| s.to_string()),
+                            });
                         }
                     }
                 }
 
                 // Manual mods in the game directory
-                if let Some(mods) = find_steam_mods(&instance.root_path) {
-                    if let Ok(entries) = std::fs::read_dir(&mods) {
-                        for entry in entries.flatten() {
-                            if entry.path().is_dir() {
-                                dirs.push(ModDirectory {
-                                    path: entry.path(),
-                                    game_id: Some(RIMWORLD_STEAM_APPID.into()),
-                                    mod_id: entry
-                                        .file_name()
-                                        .to_str()
-                                        .map(|s| s.to_string()),
-                                });
-                            }
+                if let Some(mods) = find_steam_mods(&instance.root_path)
+                    && let Ok(entries) = std::fs::read_dir(&mods)
+                {
+                    for entry in entries.flatten() {
+                        if entry.path().is_dir() {
+                            dirs.push(ModDirectory {
+                                path: entry.path(),
+                                game_id: Some(RIMWORLD_STEAM_APPID.into()),
+                                mod_id: entry.file_name().to_str().map(|s| s.to_string()),
+                            });
                         }
                     }
                 }
             }
             "GOG" => {
-                if let Some(mods) = find_gog_mods(&instance.root_path) {
-                    if let Ok(entries) = std::fs::read_dir(&mods) {
-                        for entry in entries.flatten() {
-                            if entry.path().is_dir() {
-                                dirs.push(ModDirectory {
-                                    path: entry.path(),
-                                    game_id: None,
-                                    mod_id: entry
-                                        .file_name()
-                                        .to_str()
-                                        .map(|s| s.to_string()),
-                                });
-                            }
+                if let Some(mods) = find_gog_mods(&instance.root_path)
+                    && let Ok(entries) = std::fs::read_dir(&mods)
+                {
+                    for entry in entries.flatten() {
+                        if entry.path().is_dir() {
+                            dirs.push(ModDirectory {
+                                path: entry.path(),
+                                game_id: None,
+                                mod_id: entry.file_name().to_str().map(|s| s.to_string()),
+                            });
                         }
                     }
                 }

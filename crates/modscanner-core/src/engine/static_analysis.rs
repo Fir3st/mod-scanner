@@ -16,6 +16,12 @@ struct StaticRule {
     extensions: &'static [&'static str],
 }
 
+impl Default for StaticAnalysisEngine {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl StaticAnalysisEngine {
     pub fn new() -> Self {
         Self {
@@ -82,7 +88,10 @@ fn build_rules() -> Vec<StaticRule> {
         id: "LUA-SANDBOX-001",
         name: "Lua sandbox escape attempt",
         severity: Severity::Critical,
-        pattern: Regex::new(r#"(getfenv|setfenv|debug\.(getinfo|sethook|setlocal|getlocal|setupvalue))\s*\("#).unwrap(),
+        pattern: Regex::new(
+            r#"(getfenv|setfenv|debug\.(getinfo|sethook|setlocal|getlocal|setupvalue))\s*\("#,
+        )
+        .unwrap(),
         description: "Attempting to access/modify execution environment  - possible sandbox escape",
         extensions: lua_ext,
     });
@@ -138,7 +147,10 @@ fn build_rules() -> Vec<StaticRule> {
         id: "PY-EXEC-001",
         name: "Python command execution",
         severity: Severity::Critical,
-        pattern: Regex::new(r#"(subprocess\.(call|run|Popen|check_output)|os\.(system|popen|exec))"#).unwrap(),
+        pattern: Regex::new(
+            r#"(subprocess\.(call|run|Popen|check_output)|os\.(system|popen|exec))"#,
+        )
+        .unwrap(),
         description: "Executing system commands from Python",
         extensions: py_ext,
     });
@@ -154,7 +166,8 @@ fn build_rules() -> Vec<StaticRule> {
         id: "PY-NET-001",
         name: "Python network access",
         severity: Severity::High,
-        pattern: Regex::new(r#"(urllib|requests\.(get|post|put)|http\.client|socket\.socket)"#).unwrap(),
+        pattern: Regex::new(r#"(urllib|requests\.(get|post|put)|http\.client|socket\.socket)"#)
+            .unwrap(),
         description: "Network access from Python  - mods should not need internet",
         extensions: py_ext,
     });
@@ -272,7 +285,11 @@ mod tests {
         let ctx = make_ctx(path, data);
         let engine = StaticAnalysisEngine::new();
         let findings = engine.scan(&ctx);
-        assert!(findings.iter().any(|f| f.matched_rule.as_deref() == Some("LUA-EXEC-001")));
+        assert!(
+            findings
+                .iter()
+                .any(|f| f.matched_rule.as_deref() == Some("LUA-EXEC-001"))
+        );
     }
 
     #[test]
@@ -282,7 +299,11 @@ mod tests {
         let ctx = make_ctx(path, data);
         let engine = StaticAnalysisEngine::new();
         let findings = engine.scan(&ctx);
-        assert!(findings.iter().any(|f| f.matched_rule.as_deref() == Some("LUA-EXEC-003")));
+        assert!(
+            findings
+                .iter()
+                .any(|f| f.matched_rule.as_deref() == Some("LUA-EXEC-003"))
+        );
     }
 
     #[test]
@@ -322,7 +343,11 @@ mod tests {
         let ctx = make_ctx(path, data);
         let engine = StaticAnalysisEngine::new();
         let findings = engine.scan(&ctx);
-        assert!(findings.iter().any(|f| f.matched_rule.as_deref() == Some("PY-EXEC-001")));
+        assert!(
+            findings
+                .iter()
+                .any(|f| f.matched_rule.as_deref() == Some("PY-EXEC-001"))
+        );
     }
 
     #[test]
@@ -332,6 +357,10 @@ mod tests {
         let ctx = make_ctx(path, data);
         let engine = StaticAnalysisEngine::new();
         let findings = engine.scan(&ctx);
-        assert!(findings.iter().any(|f| f.matched_rule.as_deref() == Some("WOW-SANDBOX-001")));
+        assert!(
+            findings
+                .iter()
+                .any(|f| f.matched_rule.as_deref() == Some("WOW-SANDBOX-001"))
+        );
     }
 }

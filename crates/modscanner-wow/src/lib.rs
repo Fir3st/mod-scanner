@@ -3,6 +3,12 @@ use std::path::{Path, PathBuf};
 
 pub struct WowPlatform;
 
+impl Default for WowPlatform {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl WowPlatform {
     pub fn new() -> Self {
         Self
@@ -62,7 +68,9 @@ fn wow_install_roots() -> Vec<PathBuf> {
     {
         if let Some(home) = home_dir() {
             // Lutris / Wine common paths
-            roots.push(home.join("Games/world-of-warcraft/drive_c/Program Files (x86)/World of Warcraft"));
+            roots.push(
+                home.join("Games/world-of-warcraft/drive_c/Program Files (x86)/World of Warcraft"),
+            );
             roots.push(home.join(".wine/drive_c/Program Files (x86)/World of Warcraft"));
         }
     }

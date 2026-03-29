@@ -100,10 +100,7 @@ fn cmd_scan(path: Option<PathBuf>, platform: Option<String>, format: OutputForma
         }
 
         if matches!(format, OutputFormat::Terminal) {
-            println!(
-                "{}",
-                format!("Scanning {}...", dir.display()).dimmed()
-            );
+            println!("{}", format!("Scanning {}...", dir.display()).dimmed());
         }
         let r = scanner::scan_directory(dir, &engines);
         print_report(&r, &format);
@@ -153,10 +150,7 @@ fn cmd_scan(path: Option<PathBuf>, platform: Option<String>, format: OutputForma
                 plat.name().bold(),
                 instance.variant
             );
-            println!(
-                "  Root: {}",
-                instance.root_path.display().dimmed()
-            );
+            println!("  Root: {}", instance.root_path.display().dimmed());
 
             let mod_dirs = plat.mod_directories(instance);
             if mod_dirs.is_empty() {
@@ -179,11 +173,7 @@ fn cmd_scan(path: Option<PathBuf>, platform: Option<String>, format: OutputForma
                             .unwrap_or("unknown")
                     });
 
-                println!(
-                    "\n  {} {}",
-                    "→".dimmed(),
-                    mod_name
-                );
+                println!("\n  {} {}", "→".dimmed(), mod_name);
 
                 let r = scanner::scan_directory(&mod_dir.path, &engines);
 
@@ -237,11 +227,8 @@ fn cmd_platforms() {
                     instance.root_path.display()
                 );
 
-                let mod_dirs = plat.mod_directories(&instance);
-                println!(
-                    "    {} mod(s) found",
-                    mod_dirs.len()
-                );
+                let mod_dirs = plat.mod_directories(instance);
+                println!("    {} mod(s) found", mod_dirs.len());
             }
         }
     }
@@ -274,7 +261,7 @@ fn cmd_watch(platform: Option<String>, format: OutputFormat, debounce: u64) {
     for plat in &platforms_to_scan {
         let instances = plat.detect();
         for instance in &instances {
-            let paths = plat.watch_paths(&instance);
+            let paths = plat.watch_paths(instance);
             if !paths.is_empty() {
                 println!(
                     "  {} {} ({}) - {} path(s)",
@@ -292,18 +279,12 @@ fn cmd_watch(platform: Option<String>, format: OutputFormat, debounce: u64) {
     }
 
     if watch_paths.is_empty() {
-        eprintln!(
-            "{} No platforms detected to watch.",
-            "Error:".red().bold()
-        );
+        eprintln!("{} No platforms detected to watch.", "Error:".red().bold());
         process::exit(3);
     }
 
     println!();
-    println!(
-        "{}",
-        "Watching for mod changes... (Ctrl+C to stop)".bold()
-    );
+    println!("{}", "Watching for mod changes... (Ctrl+C to stop)".bold());
 
     let engines = std::sync::Arc::new(default_engines());
     let config = modscanner_monitor::WatchConfig {
@@ -322,8 +303,16 @@ fn main() {
     let cli = Cli::parse();
 
     match cli.command {
-        Commands::Scan { path, platform, format } => cmd_scan(path, platform, format),
-        Commands::Watch { platform, format, debounce } => cmd_watch(platform, format, debounce),
+        Commands::Scan {
+            path,
+            platform,
+            format,
+        } => cmd_scan(path, platform, format),
+        Commands::Watch {
+            platform,
+            format,
+            debounce,
+        } => cmd_watch(platform, format, debounce),
         Commands::Platforms => cmd_platforms(),
     }
 }

@@ -73,8 +73,8 @@ fn run_event_loop(
     loop {
         select! {
             recv(rx) -> msg => {
-                if let Ok(event) = msg {
-                    if matches!(
+                if let Ok(event) = msg
+                    && matches!(
                         event.kind,
                         EventKind::Create(_) | EventKind::Modify(_)
                     ) {
@@ -85,7 +85,6 @@ fn run_event_loop(
                             }
                         }
                     }
-                }
             }
             recv(ticker) -> _ => {
                 // Check if any pending directories have been quiet long enough
@@ -123,10 +122,10 @@ fn find_mod_root(path: &Path) -> Option<PathBuf> {
         }
 
         // WoW: has a .toc file matching dir name
-        if let Some(dir_name) = current.file_name().and_then(|n| n.to_str()) {
-            if current.join(format!("{dir_name}.toc")).exists() {
-                return Some(current);
-            }
+        if let Some(dir_name) = current.file_name().and_then(|n| n.to_str())
+            && current.join(format!("{dir_name}.toc")).exists()
+        {
+            return Some(current);
         }
 
         // Check if parent is a known mod container

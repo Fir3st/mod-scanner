@@ -4,6 +4,12 @@ use super::{DetectionEngine, FileContext, Finding, Severity};
 /// Example: an EXE disguised as a PNG texture.
 pub struct FiletypeEngine;
 
+impl Default for FiletypeEngine {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl FiletypeEngine {
     pub fn new() -> Self {
         Self
@@ -12,10 +18,9 @@ impl FiletypeEngine {
 
 /// Extensions that should never contain executable content
 const DATA_EXTENSIONS: &[&str] = &[
-    "png", "jpg", "jpeg", "gif", "bmp", "tga", "dds", "blp", "tif", "tiff", "ico", "svg",
-    "ogg", "wav", "mp3", "flac", "aac", "wma",
-    "xml", "json", "toml", "yaml", "yml", "ini", "cfg", "txt", "md", "csv",
-    "lua", "luac", "py", "cs", "js",
+    "png", "jpg", "jpeg", "gif", "bmp", "tga", "dds", "blp", "tif", "tiff", "ico", "svg", "ogg",
+    "wav", "mp3", "flac", "aac", "wma", "xml", "json", "toml", "yaml", "yml", "ini", "cfg", "txt",
+    "md", "csv", "lua", "luac", "py", "cs", "js",
 ];
 
 /// File types detected by magic bytes that are dangerous
@@ -69,28 +74,26 @@ impl DetectionEngine for FiletypeEngine {
         }
 
         // Check with infer crate for magic byte detection
-        if let Some(kind) = infer::get(ctx.data) {
-            if is_dangerous_type(&kind) {
-                findings.push(Finding {
-                    engine_name: self.name(),
-                    severity: Severity::Critical,
-                    title: format!(
-                        "Executable disguised as .{ext}"
-                    ),
-                    description: format!(
-                        "File has .{ext} extension but magic bytes identify it as {} ({}). \
+        if let Some(kind) = infer::get(ctx.data)
+            && is_dangerous_type(&kind)
+        {
+            findings.push(Finding {
+                engine_name: self.name(),
+                severity: Severity::Critical,
+                title: format!("Executable disguised as .{ext}"),
+                description: format!(
+                    "File has .{ext} extension but magic bytes identify it as {} ({}). \
                          This is a strong indicator of a malicious file attempting to hide \
                          its true nature.",
-                        kind.mime_type(),
-                        kind.extension()
-                    ),
-                    file_path: ctx.path.to_path_buf(),
-                    byte_offset: Some(0),
-                    line_number: None,
-                    matched_rule: Some("FILETYPE-EXEC-DISGUISED".into()),
-                });
-                return findings;
-            }
+                    kind.mime_type(),
+                    kind.extension()
+                ),
+                file_path: ctx.path.to_path_buf(),
+                byte_offset: Some(0),
+                line_number: None,
+                matched_rule: Some("FILETYPE-EXEC-DISGUISED".into()),
+            });
+            return findings;
         }
 
         // Manual checks for cases infer might miss
@@ -123,7 +126,16 @@ impl DetectionEngine for FiletypeEngine {
         } else if has_shebang(ctx.data)
             && matches!(
                 ext.as_str(),
-                "png" | "jpg" | "jpeg" | "gif" | "bmp" | "tga" | "dds" | "blp" | "ogg" | "wav"
+                "png"
+                    | "jpg"
+                    | "jpeg"
+                    | "gif"
+                    | "bmp"
+                    | "tga"
+                    | "dds"
+                    | "blp"
+                    | "ogg"
+                    | "wav"
                     | "mp3"
             )
         {

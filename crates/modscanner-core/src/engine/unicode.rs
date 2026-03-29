@@ -7,6 +7,12 @@ use super::{DetectionEngine, FileContext, Finding, Severity};
 /// - Non-printable control characters
 pub struct UnicodeEngine;
 
+impl Default for UnicodeEngine {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl UnicodeEngine {
     pub fn new() -> Self {
         Self
@@ -110,6 +116,8 @@ fn find_mixed_script_tokens(line: &str) -> Vec<(String, Script, Script)> {
 }
 
 /// Latin-Cyrillic confusable pairs (chars that look identical).
+/// Reserved for future per-character confusable detection.
+#[allow(dead_code)]
 /// Format: (Cyrillic char, Latin lookalike)
 const CONFUSABLES: &[(char, char)] = &[
     ('\u{0410}', 'A'), // А
@@ -136,6 +144,7 @@ const CONFUSABLES: &[(char, char)] = &[
 ];
 
 /// Check if a char is a known confusable (looks like a Latin char but isn't)
+#[allow(dead_code)]
 fn is_confusable(ch: char) -> bool {
     CONFUSABLES.iter().any(|&(cyr, _)| cyr == ch)
 }
@@ -155,9 +164,8 @@ fn check_token(chars: &[char], results: &mut Vec<(String, Script, Script)>) {
         return;
     }
     // Also skip "cFFFFFD00Text" pattern (uppercase variant)
-    if chars.len() >= 10
-        && (chars[0] == 'c' || chars[0] == 'C')
-        && chars[1] == 'f' || chars[1] == 'F'
+    if chars.len() >= 10 && (chars[0] == 'c' || chars[0] == 'C') && chars[1] == 'f'
+        || chars[1] == 'F'
     {
         let hex_prefix: String = chars[1..].iter().take(8).collect();
         if hex_prefix.chars().all(|c| c.is_ascii_hexdigit()) {
@@ -222,7 +230,10 @@ fn check_token(chars: &[char], results: &mut Vec<(String, Script, Script)>) {
     // "nОкно" = 1 Latin + 4 Cyr → Cyrillic is majority → skip
     else if transitions == 1 {
         let latin_count = scripts.iter().filter(|&&s| s == Script::Latin).count();
-        let non_latin_count = scripts.iter().filter(|&&s| s == Script::Cyrillic || s == Script::Greek).count();
+        let non_latin_count = scripts
+            .iter()
+            .filter(|&&s| s == Script::Cyrillic || s == Script::Greek)
+            .count();
 
         if latin_count > non_latin_count {
             // Minority non-Latin chars in a Latin word → likely substitution
@@ -430,7 +441,11 @@ mod tests {
         let ctx = make_ctx(path, data);
         let engine = UnicodeEngine::new();
         let findings = engine.scan(&ctx);
-        assert!(findings.iter().any(|f| f.matched_rule.as_deref() == Some("UNICODE-ZERO-WIDTH")));
+        assert!(
+            findings
+                .iter()
+                .any(|f| f.matched_rule.as_deref() == Some("UNICODE-ZERO-WIDTH"))
+        );
     }
 
     #[test]
@@ -441,9 +456,11 @@ mod tests {
         let ctx = make_ctx(path, data);
         let engine = UnicodeEngine::new();
         let findings = engine.scan(&ctx);
-        assert!(findings
-            .iter()
-            .any(|f| f.matched_rule.as_deref() == Some("UNICODE-MIXED-SCRIPT")));
+        assert!(
+            findings
+                .iter()
+                .any(|f| f.matched_rule.as_deref() == Some("UNICODE-MIXED-SCRIPT"))
+        );
     }
 
     #[test]
