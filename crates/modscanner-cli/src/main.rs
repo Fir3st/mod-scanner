@@ -38,6 +38,21 @@ enum Commands {
         format: OutputFormat,
     },
 
+    /// Watch mod directories for changes and scan in real-time
+    Watch {
+        /// Platforms to watch: rimworld, wow, all (default: all detected)
+        #[arg(short, long)]
+        platform: Option<String>,
+
+        /// Output format
+        #[arg(short, long, default_value = "terminal")]
+        format: OutputFormat,
+
+        /// Debounce interval in seconds
+        #[arg(short, long, default_value = "2")]
+        debounce: u64,
+    },
+
     /// List detected game platforms
     Platforms,
 }
@@ -238,12 +253,77 @@ fn cmd_platforms() {
     }
 }
 
+fn cmd_watch(platform: Option<String>, format: OutputFormat, debounce: u64) {
+    let platforms_to_scan: Vec<Box<dyn Platform>> = match platform.as_deref() {
+        Some("all") | None => all_platforms(),
+        Some(name) => match find_platform(name) {
+            Some(p) => vec![p],
+            None => {
+                eprintln!(
+                    "{} Unknown platform '{}'. Available: rimworld, wow, steam, curseforge",
+                    "Error:".red().bold(),
+                    name
+                );
+                process::exit(3);
+            }
+        },
+    };
+
+    let mut watch_paths = Vec::new();
+
+    for plat in &platforms_to_scan {
+        let instances = plat.detect();
+        for instance in &instances {
+            let paths = plat.watch_paths(&instance);
+            if !paths.is_empty() {
+                println!(
+                    "  {} {} ({}) - {} path(s)",
+                    "watching".green().bold(),
+                    plat.name(),
+                    instance.variant,
+                    paths.len()
+                );
+                for p in &paths {
+                    println!("    {}", p.display().dimmed());
+                }
+                watch_paths.extend(paths);
+            }
+        }
+    }
+
+    if watch_paths.is_empty() {
+        eprintln!(
+            "{} No platforms detected to watch.",
+            "Error:".red().bold()
+        );
+        process::exit(3);
+    }
+
+    println!();
+    println!(
+        "{}",
+        "Watching for mod changes... (Ctrl+C to stop)".bold()
+    );
+
+    let engines = std::sync::Arc::new(default_engines());
+    let config = modscanner_monitor::WatchConfig {
+        debounce_secs: debounce,
+        json: matches!(format, OutputFormat::Json),
+    };
+
+    if let Err(e) = modscanner_monitor::watch(&watch_paths, engines, config) {
+        eprintln!("{} Watch failed: {e}", "Error:".red().bold());
+        process::exit(3);
+    }
+}
+
 fn main() {
     env_logger::init();
     let cli = Cli::parse();
 
     match cli.command {
         Commands::Scan { path, platform, format } => cmd_scan(path, platform, format),
+        Commands::Watch { platform, format, debounce } => cmd_watch(platform, format, debounce),
         Commands::Platforms => cmd_platforms(),
     }
 }

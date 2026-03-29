@@ -14,6 +14,7 @@ modscanner-rimworld.workspace = true
 modscanner-wow.workspace = true
 modscanner-steam.workspace = true
 modscanner-curseforge.workspace = true
+modscanner-monitor.workspace = true
 clap.workspace = true
 env_logger.workspace = true
 log.workspace = true
