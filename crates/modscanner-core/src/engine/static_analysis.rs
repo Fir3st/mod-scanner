@@ -235,6 +235,23 @@ fn build_rules() -> Vec<StaticRule> {
     });
 
     rules.push(StaticRule {
+        id: "CS-THREAD-001",
+        name: "C# background thread creation",
+        severity: Severity::Medium,
+        pattern: Regex::new(r#"new\s+Thread\s*\(|ThreadPool\.QueueUserWorkItem"#).unwrap(),
+        description: "Creating background threads — could be performing covert operations",
+        extensions: cs_ext,
+    });
+    rules.push(StaticRule {
+        id: "CS-CRYPTO-001",
+        name: "C# cryptographic operations",
+        severity: Severity::Medium,
+        pattern: Regex::new(r#"(AesCryptoServiceProvider|RijndaelManaged|RSACryptoServiceProvider|TripleDES)"#).unwrap(),
+        description: "Cryptographic operations — could be encrypting exfiltrated data or ransomware",
+        extensions: cs_ext,
+    });
+
+    rules.push(StaticRule {
         id: "CS-UNSAFE-001",
         name: "C# unsafe code block",
         severity: Severity::Medium,
