@@ -203,6 +203,21 @@ const SUSPICIOUS_DOTNET_STRINGS: &[(&str, &str, Severity)] = &[
     ),
     ("DllImport", "P/Invoke native code", Severity::Medium),
     (
+        "TaskScheduler",
+        "Task Scheduler access  - persistence mechanism",
+        Severity::Critical,
+    ),
+    (
+        "StartupFolder",
+        "Startup folder reference  - persistence mechanism",
+        Severity::Critical,
+    ),
+    (
+        "CurrentVersion\\Run",
+        "Registry Run key  - auto-start persistence",
+        Severity::Critical,
+    ),
+    (
         "GetEnvironmentVariable",
         "Reading environment variables (credential/token theft?)",
         Severity::Medium,
