@@ -305,11 +305,7 @@ const SUSPICIOUS_DOTNET_STRINGS: &[(&str, &str, Severity)] = &[
         "Hash rate reference  - crypto mining indicator",
         Severity::High,
     ),
-    (
-        "xmrig",
-        "XMRig miner reference",
-        Severity::Critical,
-    ),
+    ("xmrig", "XMRig miner reference", Severity::Critical),
 ];
 
 /// Known packer section names

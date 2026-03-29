@@ -271,9 +271,7 @@ impl DetectionEngine for PolyglotEngine {
                         "PNG"
                     } else if starts_with(data, JPEG_MAGIC) {
                         "JPEG"
-                    } else if starts_with(data, GIF_MAGIC_87)
-                        || starts_with(data, GIF_MAGIC_89)
-                    {
+                    } else if starts_with(data, GIF_MAGIC_87) || starts_with(data, GIF_MAGIC_89) {
                         "GIF"
                     } else if starts_with(data, BMP_MAGIC) {
                         "BMP"

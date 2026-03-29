@@ -20,12 +20,14 @@ impl FiletypeEngine {
 const DATA_EXTENSIONS: &[&str] = &[
     "png", "jpg", "jpeg", "gif", "bmp", "tga", "dds", "blp", "tif", "tiff", "ico", "svg", "ogg",
     "wav", "mp3", "flac", "aac", "wma", "xml", "json", "toml", "yaml", "yml", "ini", "cfg", "txt",
-    "md", "csv", "lua", "luac", "py", "cs", "js", "ts", "mjs", "toc", "vdf", "acf",
-    "sh", "bash", "zsh",
+    "md", "csv", "lua", "luac", "py", "cs", "js", "ts", "mjs", "toc", "vdf", "acf", "sh", "bash",
+    "zsh",
 ];
 
 /// Executable extensions that should never appear in game mod directories
-const EXEC_EXTENSIONS: &[&str] = &["exe", "bat", "cmd", "com", "scr", "pif", "msi", "ps1", "vbs", "wsf"];
+const EXEC_EXTENSIONS: &[&str] = &[
+    "exe", "bat", "cmd", "com", "scr", "pif", "msi", "ps1", "vbs", "wsf",
+];
 
 /// File types detected by magic bytes that are dangerous
 fn is_dangerous_type(kind: &infer::Type) -> bool {
@@ -83,12 +85,8 @@ impl DetectionEngine for FiletypeEngine {
         }
         // Scan files that have a data-like extension OR executable extensions
         ctx.extension.is_some_and(|ext| {
-            DATA_EXTENSIONS
-                .iter()
-                .any(|&e| e.eq_ignore_ascii_case(ext))
-                || EXEC_EXTENSIONS
-                    .iter()
-                    .any(|&e| e.eq_ignore_ascii_case(ext))
+            DATA_EXTENSIONS.iter().any(|&e| e.eq_ignore_ascii_case(ext))
+                || EXEC_EXTENSIONS.iter().any(|&e| e.eq_ignore_ascii_case(ext))
         })
     }
 
@@ -106,9 +104,10 @@ impl DetectionEngine for FiletypeEngine {
                     engine_name: self.name(),
                     severity: Severity::Critical,
                     title: "Extensionless executable file".into(),
-                    description: "File has no extension but contains executable content (PE/ELF/Mach-O). \
+                    description:
+                        "File has no extension but contains executable content (PE/ELF/Mach-O). \
                                   This may be an attempt to hide an executable."
-                        .into(),
+                            .into(),
                     file_path: ctx.path.to_path_buf(),
                     byte_offset: Some(0),
                     line_number: None,
@@ -214,33 +213,32 @@ impl DetectionEngine for FiletypeEngine {
         }
 
         // Detect double extensions (e.g., "readme.txt.exe", "image.png.scr")
-        if findings.is_empty() {
-            if let Some(stem) = ctx.path.file_stem().and_then(|s| s.to_str()) {
-                if let Some(inner_dot) = stem.rfind('.') {
-                    let inner_ext = &stem[inner_dot + 1..];
-                    // If the inner extension looks like a data type and the outer is executable
-                    if DATA_EXTENSIONS
-                        .iter()
-                        .any(|&e| e.eq_ignore_ascii_case(inner_ext))
-                        && EXEC_EXTENSIONS
-                            .iter()
-                            .any(|&e| e.eq_ignore_ascii_case(&ext))
-                    {
-                        findings.push(Finding {
-                            engine_name: self.name(),
-                            severity: Severity::Critical,
-                            title: format!("Double extension: .{inner_ext}.{ext}"),
-                            description: format!(
-                                "File uses double extension (.{inner_ext}.{ext}) to disguise an \
-                                 executable as a data file. This is a common social engineering technique."
-                            ),
-                            file_path: ctx.path.to_path_buf(),
-                            byte_offset: None,
-                            line_number: None,
-                            matched_rule: Some("FILETYPE-DOUBLE-EXT".into()),
-                        });
-                    }
-                }
+        if findings.is_empty()
+            && let Some(stem) = ctx.path.file_stem().and_then(|s| s.to_str())
+            && let Some(inner_dot) = stem.rfind('.')
+        {
+            let inner_ext = &stem[inner_dot + 1..];
+            // If the inner extension looks like a data type and the outer is executable
+            if DATA_EXTENSIONS
+                .iter()
+                .any(|&e| e.eq_ignore_ascii_case(inner_ext))
+                && EXEC_EXTENSIONS
+                    .iter()
+                    .any(|&e| e.eq_ignore_ascii_case(&ext))
+            {
+                findings.push(Finding {
+                    engine_name: self.name(),
+                    severity: Severity::Critical,
+                    title: format!("Double extension: .{inner_ext}.{ext}"),
+                    description: format!(
+                        "File uses double extension (.{inner_ext}.{ext}) to disguise an \
+                         executable as a data file. This is a common social engineering technique."
+                    ),
+                    file_path: ctx.path.to_path_buf(),
+                    byte_offset: None,
+                    line_number: None,
+                    matched_rule: Some("FILETYPE-DOUBLE-EXT".into()),
+                });
             }
         }
 

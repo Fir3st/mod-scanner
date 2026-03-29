@@ -272,8 +272,10 @@ fn build_rules() -> Vec<StaticRule> {
         id: "CS-MARSHAL-001",
         name: "C# Marshal interop",
         severity: Severity::Medium,
-        pattern: Regex::new(r#"Marshal\s*\.\s*(Copy|PtrToStructure|AllocHGlobal|ReadByte|WriteByte)"#)
-            .unwrap(),
+        pattern: Regex::new(
+            r#"Marshal\s*\.\s*(Copy|PtrToStructure|AllocHGlobal|ReadByte|WriteByte)"#,
+        )
+        .unwrap(),
         description: "Marshal interop — low-level memory manipulation, unusual for game mods",
         extensions: cs_ext,
     });
@@ -337,7 +339,8 @@ fn build_rules() -> Vec<StaticRule> {
         id: "BATCH-EXEC-001",
         name: "Batch file dangerous command",
         severity: Severity::Critical,
-        pattern: Regex::new(r#"(?i)(powershell|certutil|bitsadmin|mshta|regsvr32|rundll32)\s"#).unwrap(),
+        pattern: Regex::new(r#"(?i)(powershell|certutil|bitsadmin|mshta|regsvr32|rundll32)\s"#)
+            .unwrap(),
         description: "Batch file executing dangerous system utility — potential malware dropper",
         extensions: batch_ext,
     });
@@ -417,7 +420,10 @@ fn build_rules() -> Vec<StaticRule> {
         id: "JS-NET-001",
         name: "JavaScript fetch/XMLHttpRequest",
         severity: Severity::Medium,
-        pattern: Regex::new(r#"(fetch\s*\(\s*['\"]https?://|new\s+XMLHttpRequest|\.open\s*\(\s*['\"](?:GET|POST))"#).unwrap(),
+        pattern: Regex::new(
+            r#"(fetch\s*\(\s*['\"]https?://|new\s+XMLHttpRequest|\.open\s*\(\s*['\"](?:GET|POST))"#,
+        )
+        .unwrap(),
         description: "Network request from mod code — mods should not need internet access",
         extensions: js_ext,
     });
