@@ -189,6 +189,29 @@ fn build_rules() -> Vec<StaticRule> {
         extensions: py_ext,
     });
 
+    // === POWERSHELL RULES ===
+    let ps_ext: &[&str] = &["ps1", "psm1", "psd1"];
+
+    rules.push(StaticRule {
+        id: "PS-ENCODED-001",
+        name: "PowerShell encoded command",
+        severity: Severity::Critical,
+        pattern: Regex::new(r#"(?i)(-EncodedCommand|-enc|-e)\s+[A-Za-z0-9+/=]{20,}"#).unwrap(),
+        description: "PowerShell encoded command — commonly used to hide malicious payloads",
+        extensions: ps_ext,
+    });
+    rules.push(StaticRule {
+        id: "PS-DOWNLOAD-001",
+        name: "PowerShell download cradle",
+        severity: Severity::Critical,
+        pattern: Regex::new(
+            r#"(?i)(Invoke-WebRequest|Invoke-RestMethod|Net\.WebClient|DownloadString|DownloadFile|wget|curl)"#,
+        )
+        .unwrap(),
+        description: "PowerShell download cradle — fetching remote content",
+        extensions: ps_ext,
+    });
+
     // === WOW-SPECIFIC LUA RULES ===
     rules.push(StaticRule {
         id: "WOW-SANDBOX-001",
