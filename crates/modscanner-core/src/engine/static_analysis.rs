@@ -226,6 +226,42 @@ fn build_rules() -> Vec<StaticRule> {
         extensions: py_ext,
     });
 
+    // === JAVASCRIPT RULES ===
+    let js_ext: &[&str] = &["js", "ts"];
+
+    rules.push(StaticRule {
+        id: "JS-EXEC-001",
+        name: "JavaScript eval()",
+        severity: Severity::High,
+        pattern: Regex::new(r#"\beval\s*\("#).unwrap(),
+        description: "eval() executes arbitrary code — common obfuscation technique",
+        extensions: js_ext,
+    });
+    rules.push(StaticRule {
+        id: "JS-EXEC-002",
+        name: "JavaScript Function constructor",
+        severity: Severity::High,
+        pattern: Regex::new(r#"new\s+Function\s*\("#).unwrap(),
+        description: "new Function() creates executable code from strings",
+        extensions: js_ext,
+    });
+    rules.push(StaticRule {
+        id: "JS-NET-001",
+        name: "JavaScript fetch/XMLHttpRequest",
+        severity: Severity::Medium,
+        pattern: Regex::new(r#"(fetch\s*\(\s*['\"]https?://|new\s+XMLHttpRequest|\.open\s*\(\s*['\"](?:GET|POST))"#).unwrap(),
+        description: "Network request from mod code — mods should not need internet access",
+        extensions: js_ext,
+    });
+    rules.push(StaticRule {
+        id: "JS-EXEC-003",
+        name: "JavaScript child_process",
+        severity: Severity::Critical,
+        pattern: Regex::new(r#"require\s*\(\s*['\"]child_process['\"]"#).unwrap(),
+        description: "Node.js child_process — can execute system commands",
+        extensions: js_ext,
+    });
+
     // === POWERSHELL RULES ===
     let ps_ext: &[&str] = &["ps1", "psm1", "psd1"];
 
