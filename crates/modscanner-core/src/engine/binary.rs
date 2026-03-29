@@ -167,6 +167,26 @@ const SUSPICIOUS_DOTNET_STRINGS: &[(&str, &str, Severity)] = &[
         Severity::Medium,
     ),
     ("DllImport", "P/Invoke native code", Severity::Medium),
+    (
+        "GetEnvironmentVariable",
+        "Reading environment variables (credential/token theft?)",
+        Severity::Medium,
+    ),
+    (
+        "File.ReadAllBytes",
+        "Reading entire file contents into memory",
+        Severity::Medium,
+    ),
+    (
+        "File.ReadAllText",
+        "Reading entire file contents as text",
+        Severity::Medium,
+    ),
+    (
+        "Directory.GetFiles",
+        "Enumerating files in directory (reconnaissance?)",
+        Severity::Low,
+    ),
     // Clipboard (crypto address swapping)
     (
         "Clipboard",
