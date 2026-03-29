@@ -105,6 +105,23 @@ fn build_rules() -> Vec<StaticRule> {
     });
 
     rules.push(StaticRule {
+        id: "LUA-OBFUSC-004",
+        name: "Lua string.reverse obfuscation",
+        severity: Severity::High,
+        pattern: Regex::new(r#"string\s*\.\s*reverse\s*\("#).unwrap(),
+        description: "string.reverse() — commonly used to obfuscate strings and evade pattern matching",
+        extensions: lua_ext,
+    });
+    rules.push(StaticRule {
+        id: "LUA-OBFUSC-005",
+        name: "Lua string.gsub heavy transformation",
+        severity: Severity::Medium,
+        pattern: Regex::new(r#"string\s*\.\s*gsub\s*\([^,]+,\s*['\"]."#).unwrap(),
+        description: "string.gsub with single-char replacement — may be decoding obfuscated strings",
+        extensions: lua_ext,
+    });
+
+    rules.push(StaticRule {
         id: "LUA-EVASION-001",
         name: "Lua error-suppressed code execution",
         severity: Severity::High,
