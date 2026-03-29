@@ -105,6 +105,23 @@ fn build_rules() -> Vec<StaticRule> {
     });
 
     rules.push(StaticRule {
+        id: "LUA-OBFUSC-003",
+        name: "Lua function serialization",
+        severity: Severity::High,
+        pattern: Regex::new(r#"string\s*\.\s*dump\s*\("#).unwrap(),
+        description: "string.dump() serializes a function to binary — used for obfuscation",
+        extensions: lua_ext,
+    });
+    rules.push(StaticRule {
+        id: "LUA-ENV-001",
+        name: "Lua environment manipulation",
+        severity: Severity::High,
+        pattern: Regex::new(r#"\b_ENV\s*[\[=]"#).unwrap(),
+        description: "Direct _ENV manipulation — can override all global functions in Lua 5.2+",
+        extensions: lua_ext,
+    });
+
+    rules.push(StaticRule {
         id: "LUA-FFI-001",
         name: "Lua FFI access",
         severity: Severity::Critical,
