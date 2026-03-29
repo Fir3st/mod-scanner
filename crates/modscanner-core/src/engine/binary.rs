@@ -289,6 +289,27 @@ const SUSPICIOUS_DOTNET_STRINGS: &[(&str, &str, Severity)] = &[
         "Keyboard state monitoring  - keylogger technique",
         Severity::Critical,
     ),
+    // Crypto-mining
+    (
+        "stratum+tcp",
+        "Stratum mining protocol  - crypto mining",
+        Severity::Critical,
+    ),
+    (
+        "CryptoNight",
+        "CryptoNight hash algorithm  - Monero mining",
+        Severity::Critical,
+    ),
+    (
+        "hashrate",
+        "Hash rate reference  - crypto mining indicator",
+        Severity::High,
+    ),
+    (
+        "xmrig",
+        "XMRig miner reference",
+        Severity::Critical,
+    ),
 ];
 
 /// Known packer section names
