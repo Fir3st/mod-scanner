@@ -105,6 +105,23 @@ fn build_rules() -> Vec<StaticRule> {
     });
 
     rules.push(StaticRule {
+        id: "LUA-OBFUSC-006",
+        name: "Lua table.concat byte assembly",
+        severity: Severity::Medium,
+        pattern: Regex::new(r#"table\s*\.\s*concat\s*\(\s*\{.*string\s*\.\s*char"#).unwrap(),
+        description: "table.concat with string.char — assembling strings byte-by-byte to hide content",
+        extensions: lua_ext,
+    });
+    rules.push(StaticRule {
+        id: "LUA-EXEC-005",
+        name: "Lua dofile/loadfile from variable",
+        severity: Severity::High,
+        pattern: Regex::new(r#"(dofile|loadfile)\s*\(\s*[a-zA-Z_]"#).unwrap(),
+        description: "dofile/loadfile with variable path — loading code from a dynamic location",
+        extensions: lua_ext,
+    });
+
+    rules.push(StaticRule {
         id: "LUA-OBFUSC-004",
         name: "Lua string.reverse obfuscation",
         severity: Severity::High,
