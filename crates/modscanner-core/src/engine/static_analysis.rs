@@ -330,6 +330,38 @@ fn build_rules() -> Vec<StaticRule> {
         extensions: py_ext,
     });
 
+    // === BATCH/SHELL RULES ===
+    let batch_ext: &[&str] = &["bat", "cmd"];
+
+    rules.push(StaticRule {
+        id: "BATCH-EXEC-001",
+        name: "Batch file dangerous command",
+        severity: Severity::Critical,
+        pattern: Regex::new(r#"(?i)(powershell|certutil|bitsadmin|mshta|regsvr32|rundll32)\s"#).unwrap(),
+        description: "Batch file executing dangerous system utility — potential malware dropper",
+        extensions: batch_ext,
+    });
+
+    // === SHELL SCRIPT RULES ===
+    let sh_ext: &[&str] = &["sh", "bash", "zsh"];
+
+    rules.push(StaticRule {
+        id: "SH-EXEC-001",
+        name: "Shell script reverse shell",
+        severity: Severity::Critical,
+        pattern: Regex::new(r#"/dev/tcp/|nc\s+-[a-z]*e|bash\s+-i\s+>&"#).unwrap(),
+        description: "Reverse shell pattern — establishing remote command execution",
+        extensions: sh_ext,
+    });
+    rules.push(StaticRule {
+        id: "SH-DOWNLOAD-001",
+        name: "Shell script download and execute",
+        severity: Severity::Critical,
+        pattern: Regex::new(r#"(curl|wget)\s+.*\|\s*(bash|sh|zsh)"#).unwrap(),
+        description: "Download and pipe to shell — common malware delivery technique",
+        extensions: sh_ext,
+    });
+
     // === VDF/STEAM RULES ===
     let vdf_ext: &[&str] = &["vdf", "acf"];
 
