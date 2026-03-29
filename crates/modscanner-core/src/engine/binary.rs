@@ -144,6 +144,26 @@ const SUSPICIOUS_DOTNET_STRINGS: &[(&str, &str, Severity)] = &[
     ("bitcoin", "Bitcoin reference", Severity::Medium),
     ("ethereum", "Ethereum reference", Severity::Medium),
     ("metamask", "MetaMask reference", Severity::High),
+    (
+        "Login Data",
+        "Browser login database reference (credential theft?)",
+        Severity::High,
+    ),
+    (
+        "cookies.sqlite",
+        "Browser cookies database reference",
+        Severity::High,
+    ),
+    (
+        "leveldb",
+        "LevelDB reference (Discord/browser token storage)",
+        Severity::Medium,
+    ),
+    (
+        "Steam\\config",
+        "Steam config directory reference",
+        Severity::High,
+    ),
     // Dynamic code loading
     ("Assembly.Load", "Dynamic assembly loading", Severity::High),
     (
