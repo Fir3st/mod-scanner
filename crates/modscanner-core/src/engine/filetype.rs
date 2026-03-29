@@ -76,8 +76,11 @@ impl DetectionEngine for FiletypeEngine {
     }
 
     fn should_scan(&self, ctx: &FileContext) -> bool {
+        // Scan extensionless files (could be disguised binaries)
+        if ctx.extension.is_none() {
+            return ctx.size > 4; // need at least magic bytes
+        }
         // Scan files that have a data-like extension OR executable extensions
-        // (executables in game mod directories are always suspicious)
         ctx.extension.is_some_and(|ext| {
             DATA_EXTENSIONS
                 .iter()
@@ -90,14 +93,31 @@ impl DetectionEngine for FiletypeEngine {
 
     fn scan(&self, ctx: &FileContext) -> Vec<Finding> {
         let mut findings = Vec::new();
-        let ext = match ctx.extension {
-            Some(e) => e.to_lowercase(),
-            None => return findings,
-        };
 
         if ctx.data.is_empty() {
             return findings;
         }
+
+        // Handle extensionless files — flag if they contain executable content
+        if ctx.extension.is_none() {
+            if has_pe_header(ctx.data) || has_elf_header(ctx.data) || has_macho_header(ctx.data) {
+                findings.push(Finding {
+                    engine_name: self.name(),
+                    severity: Severity::Critical,
+                    title: "Extensionless executable file".into(),
+                    description: "File has no extension but contains executable content (PE/ELF/Mach-O). \
+                                  This may be an attempt to hide an executable."
+                        .into(),
+                    file_path: ctx.path.to_path_buf(),
+                    byte_offset: Some(0),
+                    line_number: None,
+                    matched_rule: Some("FILETYPE-EXEC-DISGUISED".into()),
+                });
+            }
+            return findings;
+        }
+
+        let ext = ctx.extension.unwrap().to_lowercase();
 
         // Check with infer crate for magic byte detection
         if let Some(kind) = infer::get(ctx.data)
