@@ -299,6 +299,11 @@ fn scan_dotnet_strings(data: &[u8], findings: &mut Vec<Finding>, path: &std::pat
     }
 }
 
+/// Check for MZ header (PE binary)
+fn has_mz_header(data: &[u8]) -> bool {
+    data.len() >= 2 && data[0] == b'M' && data[1] == b'Z'
+}
+
 /// Simple byte pattern search
 fn find_bytes(haystack: &[u8], needle: &[u8]) -> Option<usize> {
     if needle.is_empty() || haystack.len() < needle.len() {
@@ -423,7 +428,11 @@ impl DetectionEngine for BinaryEngine {
                 analyze_elf(ctx.data, &elf, &mut findings, ctx.path);
             }
             _ => {
-                // Not a recognized binary format, skip
+                // Goblin couldn't parse the binary, but if it has an MZ header
+                // it's still worth scanning for .NET strings (synthetic/minimal PEs)
+                if !skip_string_scan && has_mz_header(ctx.data) {
+                    scan_dotnet_strings(ctx.data, &mut findings, ctx.path);
+                }
             }
         }
 
