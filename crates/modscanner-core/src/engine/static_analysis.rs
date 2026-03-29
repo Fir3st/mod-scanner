@@ -105,6 +105,15 @@ fn build_rules() -> Vec<StaticRule> {
     });
 
     rules.push(StaticRule {
+        id: "LUA-HOOK-001",
+        name: "Lua metatable hooking",
+        severity: Severity::Medium,
+        pattern: Regex::new(r#"setmetatable\s*\(\s*_G"#).unwrap(),
+        description: "setmetatable on _G — can intercept all global variable access for hooking",
+        extensions: lua_ext,
+    });
+
+    rules.push(StaticRule {
         id: "LUA-OBFUSC-006",
         name: "Lua table.concat byte assembly",
         severity: Severity::Medium,
