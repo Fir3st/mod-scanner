@@ -270,6 +270,26 @@ fn build_rules() -> Vec<StaticRule> {
         extensions: py_ext,
     });
 
+    // === VDF/STEAM RULES ===
+    let vdf_ext: &[&str] = &["vdf", "acf"];
+
+    rules.push(StaticRule {
+        id: "STEAM-INSTALL-001",
+        name: "Steam InstallScript detected",
+        severity: Severity::High,
+        pattern: Regex::new(r#"(?i)"InstallScript""#).unwrap(),
+        description: "Steam VDF InstallScript — runs arbitrary commands during mod installation",
+        extensions: vdf_ext,
+    });
+    rules.push(StaticRule {
+        id: "STEAM-RUN-001",
+        name: "Steam VDF Run entry",
+        severity: Severity::Critical,
+        pattern: Regex::new(r#"(?i)"Run"\s+"[^"]*\.(exe|bat|cmd|ps1|sh)"#).unwrap(),
+        description: "Steam VDF Run entry pointing to executable — auto-execution on install",
+        extensions: vdf_ext,
+    });
+
     // === XML RULES ===
     let xml_ext: &[&str] = &["xml"];
 

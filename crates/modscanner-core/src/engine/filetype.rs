@@ -20,7 +20,7 @@ impl FiletypeEngine {
 const DATA_EXTENSIONS: &[&str] = &[
     "png", "jpg", "jpeg", "gif", "bmp", "tga", "dds", "blp", "tif", "tiff", "ico", "svg", "ogg",
     "wav", "mp3", "flac", "aac", "wma", "xml", "json", "toml", "yaml", "yml", "ini", "cfg", "txt",
-    "md", "csv", "lua", "luac", "py", "cs", "js", "ts", "mjs", "toc",
+    "md", "csv", "lua", "luac", "py", "cs", "js", "ts", "mjs", "toc", "vdf", "acf",
 ];
 
 /// Executable extensions that should never appear in game mod directories
