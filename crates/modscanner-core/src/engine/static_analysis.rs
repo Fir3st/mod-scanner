@@ -285,6 +285,31 @@ fn build_rules() -> Vec<StaticRule> {
         extensions: ps_ext,
     });
 
+    rules.push(StaticRule {
+        id: "PY-FFI-001",
+        name: "Python ctypes FFI",
+        severity: Severity::High,
+        pattern: Regex::new(r#"ctypes\.(windll|cdll|CDLL|WinDLL)"#).unwrap(),
+        description: "ctypes FFI — calling native code from Python, bypasses sandboxing",
+        extensions: py_ext,
+    });
+    rules.push(StaticRule {
+        id: "PY-IMPORT-001",
+        name: "Python dynamic import",
+        severity: Severity::Medium,
+        pattern: Regex::new(r#"__import__\s*\(|importlib\.import_module\s*\("#).unwrap(),
+        description: "Dynamic module import — can load arbitrary Python modules at runtime",
+        extensions: py_ext,
+    });
+    rules.push(StaticRule {
+        id: "PY-KEYLOG-001",
+        name: "Python keyboard hooking",
+        severity: Severity::Critical,
+        pattern: Regex::new(r#"(pynput|keyboard\.on_press|SetWindowsHookEx)"#).unwrap(),
+        description: "Keyboard hooking/keylogging capability detected",
+        extensions: py_ext,
+    });
+
     // === WOW-SPECIFIC LUA RULES ===
     rules.push(StaticRule {
         id: "WOW-SANDBOX-001",
