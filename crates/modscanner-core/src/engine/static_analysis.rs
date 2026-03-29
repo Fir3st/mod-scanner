@@ -105,6 +105,15 @@ fn build_rules() -> Vec<StaticRule> {
     });
 
     rules.push(StaticRule {
+        id: "LUA-EVASION-001",
+        name: "Lua error-suppressed code execution",
+        severity: Severity::High,
+        pattern: Regex::new(r#"pcall\s*\(\s*(loadstring|load|dofile)"#).unwrap(),
+        description: "pcall wrapping loadstring/load — error suppression around dynamic code execution",
+        extensions: lua_ext,
+    });
+
+    rules.push(StaticRule {
         id: "LUA-OBFUSC-003",
         name: "Lua function serialization",
         severity: Severity::High,
