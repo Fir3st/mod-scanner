@@ -1,0 +1,33 @@
+Building modscanner...
+    Finished `release` profile [optimized] target(s) in 0.02s
+=== Evaluating malicious samples ===
+  TP: malicious/generic/mixed_script (3 findings, max=high)
+  TP: malicious/generic/zero_width (1 findings, max=high)
+  TP: malicious/rimworld/bidi_attack (2 findings, max=critical)
+  TP: malicious/rimworld/dotnet_malware (6 findings, max=critical)
+  TP: malicious/rimworld/exe_as_png (1 findings, max=critical)
+  TP: malicious/rimworld/harmony_abuse (6 findings, max=critical)
+  TP: malicious/rimworld/polyglot (1 findings, max=critical)
+  TP: malicious/wow/covert_channel (1 findings, max=medium)
+  TP: malicious/wow/exe_in_addon (1 findings, max=critical)
+  TP: malicious/wow/obfuscated_lua (3 findings, max=high)
+  TP: malicious/wow/sandbox_escape (6 findings, max=critical)
+
+=== Evaluating benign samples ===
+  TN: benign/rimworld/clean_mod (clean)
+  TN: benign/rimworld/mod_with_dll (clean)
+  TN: benign/wow/addon_with_libs (clean)
+  TN: benign/wow/simple_addon (clean)
+
+=== Results ===
+  TP=11 FN=0 TN=4 FP=0
+
+=== Metrics ===
+score:            1.0
+precision:        1.0
+recall:           1.0
+f1:               1.0
+true_positives:   11
+false_negatives:  0
+true_negatives:   4
+false_positives:  0
