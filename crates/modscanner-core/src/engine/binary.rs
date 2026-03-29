@@ -203,6 +203,31 @@ const SUSPICIOUS_DOTNET_STRINGS: &[(&str, &str, Severity)] = &[
     ),
     ("DllImport", "P/Invoke native code", Severity::Medium),
     (
+        "IsDebuggerPresent",
+        "Anti-debugging check  - malware evasion technique",
+        Severity::High,
+    ),
+    (
+        "CheckRemoteDebuggerPresent",
+        "Anti-debugging check  - malware evasion technique",
+        Severity::High,
+    ),
+    (
+        "VirtualProtect",
+        "Memory protection change  - code injection technique",
+        Severity::High,
+    ),
+    (
+        "WriteProcessMemory",
+        "Writing to another process memory  - injection",
+        Severity::Critical,
+    ),
+    (
+        "CreateRemoteThread",
+        "Creating thread in another process  - injection",
+        Severity::Critical,
+    ),
+    (
         "TaskScheduler",
         "Task Scheduler access  - persistence mechanism",
         Severity::Critical,
