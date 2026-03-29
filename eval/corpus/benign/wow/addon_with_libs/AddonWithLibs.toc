@@ -1,0 +1,7 @@
+## Interface: 110000
+## Title: Addon With Libs
+## Author: LibUser
+## Version: 2.0.0
+## Dependencies: LibStub
+AddonWithLibs.lua
+Libs/LibStub.lua

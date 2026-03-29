@@ -1,0 +1,6 @@
+## Interface: 110000
+## Title: Simple Addon
+## Author: SafeDev
+## Version: 1.0.0
+## Notes: A simple safe addon
+SimpleAddon.lua

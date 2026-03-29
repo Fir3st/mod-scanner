@@ -1,0 +1,95 @@
+# Expected findings for the evaluation corpus.
+# Each entry maps a relative path (from corpus/) to expected detection results.
+# The evaluator checks that modscanner produces these findings.
+
+# === MALICIOUS SAMPLES ===
+# These MUST be detected (false negative = bad)
+
+[[malicious]]
+path = "malicious/rimworld/exe_as_png"
+expected_rules = ["FILETYPE-EXEC-DISGUISED"]
+min_severity = "critical"
+description = "PE executable disguised as PNG texture"
+
+[[malicious]]
+path = "malicious/rimworld/bidi_attack"
+expected_rules = ["UNICODE-BIDI-OVERRIDE"]
+min_severity = "critical"
+description = "Bidirectional text override in Lua script"
+
+[[malicious]]
+path = "malicious/rimworld/dotnet_malware"
+expected_rules = ["BINARY-DOTNET-SYSTEM-NET-HTTP", "BINARY-DOTNET-PROCESSSTARTINFO", "BINARY-DOTNET-CMD-EXE"]
+min_severity = "high"
+description = "DLL with network access, process execution, credential theft strings"
+
+[[malicious]]
+path = "malicious/rimworld/harmony_abuse"
+expected_rules = ["BINARY-DOTNET-SYSTEM-DIAGNOSTICS-PROCESS", "BINARY-DOTNET-SYSTEM-NET-SOCKETS", "BINARY-DOTNET-TCPCLIENT"]
+min_severity = "critical"
+description = "DLL with process spawning and raw socket access"
+
+[[malicious]]
+path = "malicious/rimworld/polyglot"
+expected_rules = ["POLYGLOT-PNG-ZIP"]
+min_severity = "critical"
+description = "PNG with ZIP archive appended after IEND"
+
+[[malicious]]
+path = "malicious/wow/sandbox_escape"
+expected_rules = ["WOW-SANDBOX-001", "LUA-EXEC-001", "LUA-EXEC-002"]
+min_severity = "critical"
+description = "WoW Lua sandbox escape via io.open, os.execute, io.popen"
+
+[[malicious]]
+path = "malicious/wow/obfuscated_lua"
+expected_rules = ["LUA-EXEC-003", "LUA-OBFUSC-001"]
+min_severity = "high"
+description = "Obfuscated Lua with string.char encoding and loadstring"
+
+[[malicious]]
+path = "malicious/wow/covert_channel"
+expected_rules = ["WOW-COVERT-001"]
+min_severity = "medium"
+description = "Suspicious SendAddonMessage with long prefix"
+
+[[malicious]]
+path = "malicious/wow/exe_in_addon"
+expected_rules = ["FILETYPE-EXEC-DISGUISED"]
+min_severity = "critical"
+description = "Executable file in WoW addon directory"
+
+[[malicious]]
+path = "malicious/generic/zero_width"
+expected_rules = ["UNICODE-ZERO-WIDTH"]
+min_severity = "high"
+description = "Zero-width characters hiding in variable names"
+
+[[malicious]]
+path = "malicious/generic/mixed_script"
+expected_rules = ["UNICODE-MIXED-SCRIPT"]
+min_severity = "high"
+description = "Cyrillic homoglyphs substituted for Latin chars in C# code"
+
+# === BENIGN SAMPLES ===
+# These must NOT produce high/critical findings (false positive = bad)
+
+[[benign]]
+path = "benign/rimworld/clean_mod"
+max_allowed_severity = "low"
+description = "Clean RimWorld mod with XML defs and valid PNG"
+
+[[benign]]
+path = "benign/rimworld/mod_with_dll"
+max_allowed_severity = "low"
+description = "RimWorld mod with whitelisted Harmony DLL"
+
+[[benign]]
+path = "benign/wow/simple_addon"
+max_allowed_severity = "low"
+description = "Simple WoW addon with clean Lua"
+
+[[benign]]
+path = "benign/wow/addon_with_libs"
+max_allowed_severity = "low"
+description = "WoW addon with LibStub library"
