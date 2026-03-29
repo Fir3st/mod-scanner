@@ -192,6 +192,24 @@ fn build_rules() -> Vec<StaticRule> {
     });
 
     rules.push(StaticRule {
+        id: "CS-UNSAFE-001",
+        name: "C# unsafe code block",
+        severity: Severity::Medium,
+        pattern: Regex::new(r#"\bunsafe\s*\{"#).unwrap(),
+        description: "Unsafe code block — direct memory manipulation, unusual for game mods",
+        extensions: cs_ext,
+    });
+    rules.push(StaticRule {
+        id: "CS-MARSHAL-001",
+        name: "C# Marshal interop",
+        severity: Severity::Medium,
+        pattern: Regex::new(r#"Marshal\s*\.\s*(Copy|PtrToStructure|AllocHGlobal|ReadByte|WriteByte)"#)
+            .unwrap(),
+        description: "Marshal interop — low-level memory manipulation, unusual for game mods",
+        extensions: cs_ext,
+    });
+
+    rules.push(StaticRule {
         id: "CS-REFLECT-002",
         name: "C# runtime code generation",
         severity: Severity::High,
