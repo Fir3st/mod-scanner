@@ -274,6 +274,21 @@ const SUSPICIOUS_DOTNET_STRINGS: &[(&str, &str, Severity)] = &[
         "Reading clipboard data",
         Severity::Medium,
     ),
+    (
+        "CopyFromScreen",
+        "Screen capture  - spyware behavior",
+        Severity::Critical,
+    ),
+    (
+        "GetForegroundWindow",
+        "Getting active window  - keylogger/spyware technique",
+        Severity::Medium,
+    ),
+    (
+        "GetAsyncKeyState",
+        "Keyboard state monitoring  - keylogger technique",
+        Severity::Critical,
+    ),
 ];
 
 /// Known packer section names
